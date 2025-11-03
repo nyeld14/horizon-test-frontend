@@ -63,6 +63,8 @@ const InverterSimDetailList = () => {
     return '';
   };
 
+  
+
   // Fetch SIM details
   const fetchSimDetails = async (page = 1, search = '') => {
     try {
@@ -228,7 +230,7 @@ const InverterSimDetailList = () => {
                 <option value="">-- Select Inverter --</option>
                 {inverters.map((inv) => (
                   <option key={inv.id} value={inv.id}>
-                    {inv.given_name} ({inv.serial_no})
+                    {inv.unit_id} 
                   </option>
                 ))}
               </select>
@@ -315,32 +317,53 @@ const InverterSimDetailList = () => {
       </MDBCard>
 
       {/* SIM Table */}
-      <MDBCard>
-        <MDBCardBody>
-          <MDBCardTitle className="text-secondary fs-5 mb-3">📋 SIM Details Listing</MDBCardTitle>
-          <MDBTable hover bordered responsive align="middle">
-            <MDBTableHead light>
-                <tr>
-                  <th>SI No</th>
-                  <th onClick={() => sortData('inverter_id')} style={{ cursor: 'pointer' }}>
-                    Inverter {sortConfig.key === 'inverter_id' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th onClick={() => sortData('phone_number')} style={{ cursor: 'pointer' }}>
-                    Phone Number {sortConfig.key === 'phone_number' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th onClick={() => sortData('serial_no')} style={{ cursor: 'pointer' }}>
-                    SIM Serial No {sortConfig.key === 'serial_no' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th onClick={() => sortData('user_no')} style={{ cursor: 'pointer' }}>
-                    User No {sortConfig.key === 'user_no' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th onClick={() => sortData('installation_date')} style={{ cursor: 'pointer' }}>
-                    Installation Date {sortConfig.key === 'installation_date' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th>Remarks</th>
-                  <th>Actions</th>
-                </tr>
-              </MDBTableHead>
+    {/* SIM Table */}
+<MDBCard>
+  <MDBCardBody>
+    <MDBCardTitle className="text-secondary fs-5 mb-3">
+      📋 SIM Details Listing
+    </MDBCardTitle>
+
+    {/* 🔍 Search Bar */}
+    <div className="mb-3 d-flex gap-2">
+      <input
+        type="text"
+        placeholder="Search by Inverter, Phone, or SIM Serial"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="form-control"
+      />
+      {searchQuery && (
+        <MDBBtn color="secondary" onClick={() => setSearchQuery('')}>
+          Clear
+        </MDBBtn>
+      )}
+    </div>
+
+    <MDBTable hover bordered responsive align="middle">
+      <MDBTableHead light>
+        <tr>
+          <th>SI No</th>
+          <th onClick={() => sortData('inverter_id')} style={{ cursor: 'pointer' }}>
+            Inverter {sortConfig.key === 'inverter_id' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+          </th>
+          <th onClick={() => sortData('phone_number')} style={{ cursor: 'pointer' }}>
+            Phone Number {sortConfig.key === 'phone_number' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+          </th>
+          <th onClick={() => sortData('serial_no')} style={{ cursor: 'pointer' }}>
+            SIM Serial No {sortConfig.key === 'serial_no' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+          </th>
+          <th onClick={() => sortData('user_no')} style={{ cursor: 'pointer' }}>
+            User No {sortConfig.key === 'user_no' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+          </th>
+          <th onClick={() => sortData('installation_date')} style={{ cursor: 'pointer' }}>
+            Installation Date {sortConfig.key === 'installation_date' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
+          </th>
+          <th>Remarks</th>
+          <th>Actions</th>
+        </tr>
+      </MDBTableHead>
+
 
             <MDBTableBody>
               {simDetails.length > 0 ? (
@@ -358,12 +381,12 @@ const InverterSimDetailList = () => {
                           <option value="">-- Select Inverter --</option>
                           {inverters.map((inv) => (
                             <option key={inv.id} value={inv.id}>
-                              {inv.given_name} ({inv.serial_no})
+                              {inv.unit_id} ({inv.serial_no})
                             </option>
                           ))}
                         </select>
                       ) : (
-                        inverters.find((i) => i.id === sim.inverter_id)?.given_name || 'N/A'
+                        inverters.find((i) => i.id === sim.inverter_id)?.unit_id || 'N/A'
                       )}
                     </td>
 

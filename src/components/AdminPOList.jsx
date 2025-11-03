@@ -27,6 +27,8 @@ const AdminPOList = () => {
   const [generators, setGenerators] = useState([]);
   const [siteContacts, setSiteContacts] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [showWithoutEndDate, setShowWithoutEndDate] = useState(true);
+
 
   // 🔹 Regex patterns
   const patterns = {
@@ -185,17 +187,22 @@ const AdminPOList = () => {
   };
 
   const filteredOrders = orders.filter((order) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      order.po_number?.toLowerCase().includes(query) ||
-      order.contract_no?.toLowerCase().includes(query) ||
-      order.remarks?.toLowerCase().includes(query) ||
-      (order.inverter_name || '').toLowerCase().includes(query) ||
-      (order.generator_no || '').toLowerCase().includes(query) ||
-      (order.location_name || '').toLowerCase().includes(query) ||
-      (order.client_name || '').toLowerCase().includes(query)
-    );
-  });
+  const query = searchQuery.toLowerCase();
+
+  const matchesSearch =
+    order.po_number?.toLowerCase().includes(query) ||
+    order.contract_no?.toLowerCase().includes(query) ||
+    order.remarks?.toLowerCase().includes(query) ||
+    (order.inverter_name || '').toLowerCase().includes(query) ||
+    (order.generator_no || '').toLowerCase().includes(query) ||
+    (order.location_name || '').toLowerCase().includes(query) ||
+    (order.client_name || '').toLowerCase().includes(query);
+
+  const matchesNoEndDate = showWithoutEndDate ? !order.end_date : true;
+
+  return matchesSearch && matchesNoEndDate;
+});
+
 
   const handleOffhire = async (id) => {
     if (!window.confirm('Are you sure you want to offhire this PO?')) return;
@@ -253,13 +260,27 @@ const AdminPOList = () => {
             📦 Admin PO List
           </MDBCardTitle>
 
-          <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="Search by PO Number, Inverter, Contract No, Location, Generator ,Client Name "
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        
+    <div className="d-flex align-items-center mb-3">
+  <input
+    type="text"
+    className="form-control me-3"
+    placeholder="🔍 Search by PO Number, Inverter, Contract No, Location, Generator, Client Name"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    style={{ flex: 1 }}
+  />
+
+  <MDBBtn
+    size="sm"
+    color={showWithoutEndDate ? 'primary' : 'secondary'}
+    onClick={() => setShowWithoutEndDate((prev) => !prev)}
+  >
+    {showWithoutEndDate ? 'Showing Without End Date' : 'Showing All POs'}
+  </MDBBtn>
+</div>
+
+
 
           {sortedOrders.length === 0 ? (
             <p className="text-muted text-center">No POs found.</p>

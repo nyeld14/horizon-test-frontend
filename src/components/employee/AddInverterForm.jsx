@@ -24,6 +24,7 @@ const AddInverterForm = () => {
   const [statuses, setStatuses] = useState([]);
   const [errors, setErrors] = useState({});
 
+  // Fetch inverter statuses
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
@@ -36,11 +37,11 @@ const AddInverterForm = () => {
     fetchStatuses();
   }, []);
 
-  // Regex validation rules with examples
+  // --- Regex validation rules ---
   const validationRules = {
     unit_id: {
-      regex: /^[A-Z]{3}\s*-\s*\d{3}\/\d{3}-\d{3}$/,
-      example: "HZE - 176/300-079",
+      regex: /^HZE\s*-\s*\d{2,5}\/\d{2,5}(?:-\d{2,5})?$/,
+      example: "HZE - 176/300-079, HZE-10/46, or HZE-10/46-061",
     },
     model: {
       regex: /^\d{2,5}\/\d{2,5}$/,
@@ -55,23 +56,32 @@ const AddInverterForm = () => {
       example: "H79",
     },
     serial_no: {
-      regex: /^(?:\d{1,20}|NIL)$/,
-      example: "123456789 OR NIL",
+      regex: /^[A-Za-z0-9]+$|^NIL$/,
+      example: "ABC123, 2422058, or NIL",
     },
     link_to_installation: {
-  regex: /^(?:NIL|(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?)$/,
-  example: "https://example.com/install OR NIL",
-  },
-
+      regex: /^(?:NIL|(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?)$/,
+      example: "https://example.com/install OR NIL",
+    },
   };
 
+  // --- Normalize input ---
+  const normalizeInput = (value, name) => {
+    let val = value.replace(/[–—]/g, "-").replace(/\u00A0/g, " ").trim();
+    if (name === "serial_no") val = val.toUpperCase();
+    return val;
+  };
+
+  // --- Handle field change ---
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    const normalizedValue = normalizeInput(value, name);
+
+    setFormData((prev) => ({ ...prev, [name]: normalizedValue }));
 
     if (validationRules[name]) {
       const { regex, example } = validationRules[name];
-      if (!regex.test(value)) {
+      if (!regex.test(normalizedValue)) {
         setErrors((prev) => ({ ...prev, [name]: `Example: ${example}` }));
       } else {
         setErrors((prev) => {
@@ -83,12 +93,13 @@ const AddInverterForm = () => {
     }
   };
 
+  // --- Handle submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate all fields before submit
     let hasError = false;
     const newErrors = {};
+
     Object.keys(validationRules).forEach((field) => {
       if (
         formData[field] &&
@@ -105,12 +116,13 @@ const AddInverterForm = () => {
     try {
       const postData = {
         ...formData,
-        inverter_status_input: formData.inverter_status,
+        inverter_status_input: formData.inverter_status, // Send ID instead of name
       };
       delete postData.inverter_status;
 
       await axiosInstance.post("/inverters/", postData);
       alert("Inverter added successfully!");
+
       setFormData({
         unit_id: "",
         model: "",
@@ -127,7 +139,18 @@ const AddInverterForm = () => {
         "Failed to add inverter:",
         error.response?.data || error.message
       );
-      alert("Failed to add inverter. Please try again.");
+
+      if (error.response?.data) {
+        alert(
+          `Failed to add inverter:\n${JSON.stringify(
+            error.response.data,
+            null,
+            2
+          )}`
+        );
+      } else {
+        alert("Failed to add inverter. Please try again.");
+      }
     }
   };
 
@@ -178,11 +201,8 @@ const AddInverterForm = () => {
               required
             >
               <option value="">Select Inverter Status</option>
-              {statuses.map((status, index) => (
-                <option
-                  key={`${status.inverter_status_name}-${index}`}
-                  value={status.inverter_status_name}
-                >
+              {statuses.map((status) => (
+                <option key={status.id} value={status.id}>
                   {status.inverter_status_name}
                 </option>
               ))}

@@ -297,7 +297,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
                   return Array.from({ length: maxRows }, (_, rowIndex) => (
                     <tr key={rowIndex}>
                       {Object.entries(groupedData).map(([model, items]) => (
-                        <td key={model}>{items[rowIndex]?.given_name || ''}</td>
+                        <td key={model}>{items[rowIndex]?.unit_id || ''}</td>
                       ))}
                     </tr>
                   ));

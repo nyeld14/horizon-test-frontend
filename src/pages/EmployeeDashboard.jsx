@@ -27,7 +27,8 @@ import ServiceRecordsForm from '../components/employee/ServiceRecordsForm';
 import UsageReport from '../components/employee/UsageReport';
 import InverterStatusChart from '../components/employee/InverterStatusChart'; 
 import ChecklistForm from '../components/employee/ChecklistForm'; 
-import SubmittedChecklistList from '../components/employee/SubmittedChecklistList'; 
+import SubmittedChecklistList from '../components/employee/SubmittedChecklistList';
+import InverterUtilizationChart from '../components/employee/InverterTrendChart'; 
 
 
 
@@ -94,14 +95,12 @@ const EmployeeDashboard = () => {
                 <MDBIcon icon="chart-pie" className="me-2" /> Battery Summary
               </li>
 
-              {/* <li
-                className={`mb-3 ${
-                  activeTab === 'view-orders' ? 'fw-bold' : ''
-                }`}
-                onClick={() => setActiveTab('view-orders')}
+            <li
+                className={`mb-3 ${activeTab === 'trend-chart' ? 'fw-bold' : ''}`}
+                onClick={() => setActiveTab('trend-chart')}
               >
-                <MDBIcon icon="eye" className="me-2" /> View Orders
-              </li> */}
+                <MDBIcon icon="chart-line" className="me-2" /> Battery Utilisation Chart
+              </li>
               <li
                 className={`mb-3 ${
                   activeTab === 'order-list' ? 'fw-bold' : ''
@@ -252,7 +251,8 @@ const EmployeeDashboard = () => {
         <h2 className="fw-bold text-dark mt-5">
           {
             {
-              'inverter-summary': 'Battery Summary', // ✅ Added
+              'inverter-summary': 'Battery Summary', 
+              'trend-chart': 'Battery Utilisation Chart', 
               'view-orders': 'View Orders',
               'order-list': 'All Order Listings',
               'add-location': 'Add New Location',
@@ -274,7 +274,7 @@ const EmployeeDashboard = () => {
           }
         </h2>
         {activeTab === 'inverter-summary' && <InverterStatusChart />}{' '}
-        {/* ✅ Chart */}
+        {activeTab === 'trend-chart' && <InverterUtilizationChart />} 
         {activeTab === 'view-orders' && <ViewOrders />}
         {activeTab === 'order-list' && <OrderListPage />}
         {activeTab === 'add-location' && <AddLocationForm token={token} />}

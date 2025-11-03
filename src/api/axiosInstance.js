@@ -1,19 +1,51 @@
 // src/api/axiosInstance.js
-import axios from 'axios';
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const baseURL = `${import.meta.env.VITE_BASE_URL}/api/`;
 
+// ✅ Create instance
 const axiosInstance = axios.create({
   baseURL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
+
+// 🔔 Helper toast functions
+const showPermissionToast = () => {
+  toast.error("🚫 You do not have permission to perform this action.", {
+    position: "top-right",
+    autoClose: 4000,
+    hideProgressBar: true,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "colored",
+  });
+};
+
+const showNetworkToast = () => {
+  toast.error("🌐 Network error! Please check your internet connection.", {
+    position: "top-right",
+    autoClose: 4000,
+    hideProgressBar: true,
+    theme: "colored",
+  });
+};
+
+const showServerToast = () => {
+  toast.error("⚠️ Server error. Please try again later.", {
+    position: "top-right",
+    autoClose: 4000,
+    hideProgressBar: true,
+    theme: "colored",
+  });
+};
 
 // 🔐 Attach access token to each request
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -22,24 +54,28 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 🔄 Auto-refresh token on 401 errors
+// 🔄 Auto-refresh token on 401 + handle 403 and errors globally
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (
-      error.response &&
-      error.response.status === 401 &&
-      !originalRequest._retry
-    ) {
+    // 🧱 Network-level errors (no response at all)
+    if (!error.response) {
+      showNetworkToast();
+      return Promise.reject(error);
+    }
+
+    const { status, data } = error.response;
+
+    // 🔄 Handle 401 Unauthorized — Token expired, refresh logic
+    if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      const refresh_token = localStorage.getItem('refresh_token');
+      const refresh_token = localStorage.getItem("refresh_token");
 
       if (!refresh_token) {
-        // 🚪 No refresh token → force logout
-        localStorage.removeItem('access_token');
-        window.location.href = '/login';
+        localStorage.removeItem("access_token");
+        window.location.href = "/login";
         return Promise.reject(error);
       }
 
@@ -49,21 +85,31 @@ axiosInstance.interceptors.response.use(
         });
 
         const new_access_token = response.data.access;
-        localStorage.setItem('access_token', new_access_token);
+        localStorage.setItem("access_token", new_access_token);
 
-        // Update headers and retry
         axiosInstance.defaults.headers.Authorization = `Bearer ${new_access_token}`;
         originalRequest.headers.Authorization = `Bearer ${new_access_token}`;
         return axiosInstance(originalRequest);
-
       } catch (refreshError) {
-        console.error('🚫 Refresh failed, logging out...');
-        // 🚪 Refresh expired → clear and redirect
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        console.error("🚫 Refresh failed, logging out...");
+        toast.error("🔒 Session expired. Please log in again.", {
+          theme: "colored",
+        });
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
+    }
+
+    // 🚫 Handle 403 Forbidden — Permission denied
+    if (status === 403 && data?.detail === "You do not have permission to perform this action.") {
+      showPermissionToast();
+    }
+
+    // ⚙️ Handle 500+ server errors
+    if (status >= 500) {
+      showServerToast();
     }
 
     return Promise.reject(error);

@@ -17,8 +17,6 @@ const InverterList = () => {
   const [editData, setEditData] = useState({});
   const [editErrors, setEditErrors] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [nextPage, setNextPage] = useState(null);
-  const [prevPage, setPrevPage] = useState(null);
   const [count, setCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -35,8 +33,6 @@ const InverterList = () => {
         `/inverters/?page=${page}&search=${query}`
       );
       setInverters(response.data.results || []);
-      setNextPage(response.data.next);
-      setPrevPage(response.data.previous);
       setCount(response.data.count || 0);
       setCurrentPage(Number(page));
     } catch (error) {
@@ -54,28 +50,40 @@ const InverterList = () => {
   };
 
   const validationRules = {
-  unit_id: {
-  regex: /^[A-Z]{3}\s*-\s*\d{2,5}\/\d{2,5}(?:-\d{2,5}){0,2}$/,
-  example: "HZE - 176/300-079, HZE-10/46, or HZE-10/46-062",
-},
+    unit_id: {
+      regex: /^HZE\s*-\s*\d{2,5}\/\d{2,5}(?:-\d{2,5})?$/,
+      example: 'HZE - 176/300-079, HZE-10/46, or HZE-10/46-061',
+    },
 
-  model: {
-    regex: /^\d{2,5}\/\d{2,5}$/,
-    example: "176/300 or 10/46",
-  },
-  given_name: {
-    regex: /^[A-Za-z0-9\s/-]+$/,
-    example: "H79 176/300ALLYE UNIT or H61 JCB 10/46 2422058",
-  },
-  serial_no: {
-    regex: /^(?:\d*|NIL)$/,
-    example: "123456789 or NIL",
-  },
-  remarks: {
-    regex: /^[A-Za-z0-9\s/-]*$/,
-    example: "Alphanumeric with spaces, / or -",
-  },
+    model: {
+      regex: /^\d{2,5}\/\d{2,5}$/,
+      example: '176/300 or 10/46',
+    },
+    given_name: {
+      regex: /^[A-Za-z0-9\s/-]+$/,
+      example: 'H79 176/300ALLYE UNIT or H61 JCB 10/46 2422058',
+    },
+    serial_no: {
+      regex: /^[A-Za-z0-9]+$/,
+      example: 'SN12345 or AB9876',
+    },
+
+    remarks: {
+      regex: /^[A-Za-z0-9\s/-]*$/,
+      example: 'Alphanumeric with spaces, / or -',
+    },
+  };
+
+// --- Utility: normalize text input ---
+const normalizeText = (val) => {
+  if (!val) return '';
+  return val
+    .replace(/–|—/g, '-') // Replace en/em dashes with a regular hyphen
+    .replace(/\u00A0/g, ' ') // Replace non-breaking space with normal space
+    .replace(/\s+/g, ' ') // Collapse multiple spaces
+    .trim();
 };
+
 
   const validateField = (name, value) => {
     if (validationRules[name]) {
@@ -87,47 +95,46 @@ const InverterList = () => {
     return '';
   };
 
- const sortedInverters = [...inverters].sort((a, b) => {
-  if (!sortConfig.key) return 0;
+  const sortedInverters = [...inverters].sort((a, b) => {
+    if (!sortConfig.key) return 0;
 
-  let valA, valB;
+    let valA, valB;
 
-  if (sortConfig.key === 'status') {
-    valA = a.inverter_status?.inverter_status_name || '';
-    valB = b.inverter_status?.inverter_status_name || '';
-  } else {
-    valA = a[sortConfig.key] || '';
-    valB = b[sortConfig.key] || '';
-  }
+    if (sortConfig.key === 'status') {
+      valA = a.inverter_status?.inverter_status_name || '';
+      valB = b.inverter_status?.inverter_status_name || '';
+    } else {
+      valA = a[sortConfig.key] || '';
+      valB = b[sortConfig.key] || '';
+    }
 
-  // Handle dates/numbers consistently
-  if (!isNaN(Date.parse(valA)) && !isNaN(Date.parse(valB))) {
-    valA = new Date(valA);
-    valB = new Date(valB);
-  }
+    if (!isNaN(Date.parse(valA)) && !isNaN(Date.parse(valB))) {
+      valA = new Date(valA);
+      valB = new Date(valB);
+    }
 
-  if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
-  if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
-  return 0;
-});
-
+    if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   const handleEdit = (inverter) => {
     setEditingId(inverter.id);
     setEditData({
       ...inverter,
-      inverter_status_input:  inverter.inverter_status?.id || '', 
+      inverter_status: inverter.inverter_status?.id || '',
     });
     setEditErrors({});
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditData((prev) => ({ ...prev, [name]: value }));
+  const { name, value } = e.target;
+  const cleanedValue = normalizeText(value); // ✅ Clean Unicode before validating
+  setEditData((prev) => ({ ...prev, [name]: cleanedValue }));
 
-    const error = validateField(name, value);
-    setEditErrors((prev) => ({ ...prev, [name]: error }));
-  };
+  const error = validateField(name, cleanedValue);
+  setEditErrors((prev) => ({ ...prev, [name]: error }));
+};
 
   const handleSave = async () => {
     const newErrors = {};
@@ -142,23 +149,33 @@ const InverterList = () => {
     }
 
     try {
-      const payload = {
-        unit_id: editData.unit_id,
-        model: editData.model,
-        given_name: editData.given_name,
-        given_start_name: editData.given_start_name,
-        serial_no: editData.serial_no,
-        inverter_status_input: statuses.find(s => s.id === editData.inverter_status)?.inverter_status_name || "",
-        remarks: editData.remarks,
-      };
+    const payload = {
+      unit_id: normalizeText(editData.unit_id),
+      model: normalizeText(editData.model),
+      given_name: normalizeText(editData.given_name),
+      given_start_name: normalizeText(editData.given_start_name),
+      serial_no: normalizeText(editData.serial_no),
+      inverter_status_input: editData.inverter_status || null,
+      remarks: normalizeText(editData.remarks),
+  };
+
 
       await axiosInstance.patch(`/inverters/${editingId}/`, payload);
       alert('Inverter updated successfully');
       setEditingId(null);
       fetchInverters(currentPage);
     } catch (error) {
-      console.error('Update failed', error);
-      alert('Update failed');
+      console.error('Update failed', error.response?.data || error);
+
+      let msg = 'Update failed. Please check your inputs.';
+      if (error.response?.status === 400) {
+        if (error.response?.data?.serial_no) {
+          msg = "Serial number must be numeric (or 'NIL').";
+        } else if (error.response?.data?.inverter_status_input) {
+          msg = 'Invalid inverter status selected.';
+        }
+      }
+      alert(msg);
     }
   };
 
@@ -168,19 +185,21 @@ const InverterList = () => {
     setEditErrors({});
   };
 
-const handleDelete = async (id) => {
-  const confirmDelete = window.confirm('Are you sure you want to delete this inverter?');
-  if (!confirmDelete) return;
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete this inverter?'
+    );
+    if (!confirmDelete) return;
 
-  try {
-    await axiosInstance.delete(`/inverters/${id}/`);
-    alert('Inverter deleted successfully');
-    fetchInverters(currentPage);
-  } catch (error) {
-    console.error('Delete failed', error.response?.data || error);
-    alert(`Delete failed: ${JSON.stringify(error.response?.data)}`);
-  }
-};
+    try {
+      await axiosInstance.delete(`/inverters/${id}/`);
+      alert('Inverter deleted successfully');
+      fetchInverters(currentPage);
+    } catch (error) {
+      console.error('Delete failed', error.response?.data || error);
+      alert(`Delete failed: ${JSON.stringify(error.response?.data)}`);
+    }
+  };
 
   const goToNextPage = () => {
     const totalPages = Math.ceil(count / pageSize);
@@ -199,8 +218,6 @@ const handleDelete = async (id) => {
       return { key, direction: 'asc' };
     });
   };
-
-  const getStatusValue = (inv) => inv.inverter_status?.inverter_status_name || '';
 
   return (
     <div className="max-w-7xl mx-auto px-4 mt-8">
@@ -226,23 +243,75 @@ const handleDelete = async (id) => {
           ) : (
             <div className="table-responsive">
               <MDBTable hover bordered align="middle">
-               <MDBTableHead light>
+                <MDBTableHead light>
                   <tr>
                     <th>Si. No</th>
-                    <th onClick={() => handleSort('unit_id')} style={{ cursor: 'pointer' }}>
-                      Unit ID {sortConfig.key === 'unit_id' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                    <th
+                      onClick={() => handleSort('unit_id')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Unit ID{' '}
+                      {sortConfig.key === 'unit_id'
+                        ? sortConfig.direction === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
                     </th>
-                    <th onClick={() => handleSort('model')} style={{ cursor: 'pointer' }}>
-                      Model {sortConfig.key === 'model' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                    <th
+                      onClick={() => handleSort('model')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Model{' '}
+                      {sortConfig.key === 'model'
+                        ? sortConfig.direction === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
                     </th>
-                    <th onClick={() => handleSort('given_name')} style={{ cursor: 'pointer' }}>
-                      Given Name {sortConfig.key === 'given_name' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                    <th
+                      onClick={() => handleSort('given_name')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Given Name{' '}
+                      {sortConfig.key === 'given_name'
+                        ? sortConfig.direction === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
                     </th>
-                    <th onClick={() => handleSort('serial_no')} style={{ cursor: 'pointer' }}>
-                      Serial No {sortConfig.key === 'serial_no' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                    {/* ADD THIS MISSING COLUMN
+                    <th
+                      onClick={() => handleSort('given_start_name')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Given Start Name{' '}
+                      {sortConfig.key === 'given_start_name'
+                        ? sortConfig.direction === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th> */}
+                    <th
+                      onClick={() => handleSort('serial_no')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Serial No{' '}
+                      {sortConfig.key === 'serial_no'
+                        ? sortConfig.direction === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
                     </th>
-                    <th onClick={() => handleSort('status')} style={{ cursor: 'pointer' }}>
-                      Status {sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
+                    <th
+                      onClick={() => handleSort('status')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Status{' '}
+                      {sortConfig.key === 'status'
+                        ? sortConfig.direction === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
                     </th>
                     <th>Remarks</th>
                     <th>Actions</th>
@@ -251,7 +320,8 @@ const handleDelete = async (id) => {
 
                 <MDBTableBody>
                   {sortedInverters.map((inv, index) => {
-                    const serialNumber = (currentPage - 1) * pageSize + index + 1;
+                    const serialNumber =
+                      (currentPage - 1) * pageSize + index + 1;
                     return (
                       <tr key={inv.id}>
                         {editingId === inv.id ? (
@@ -262,10 +332,14 @@ const handleDelete = async (id) => {
                                 name="unit_id"
                                 value={editData.unit_id}
                                 onChange={handleChange}
-                                className={`form-control ${editErrors.unit_id ? 'is-invalid' : ''}`}
+                                className={`form-control ${
+                                  editErrors.unit_id ? 'is-invalid' : ''
+                                }`}
                               />
                               {editErrors.unit_id && (
-                                <div className="invalid-feedback">{editErrors.unit_id}</div>
+                                <div className="invalid-feedback">
+                                  {editErrors.unit_id}
+                                </div>
                               )}
                             </td>
                             <td>
@@ -273,10 +347,14 @@ const handleDelete = async (id) => {
                                 name="model"
                                 value={editData.model}
                                 onChange={handleChange}
-                                className={`form-control ${editErrors.model ? 'is-invalid' : ''}`}
+                                className={`form-control ${
+                                  editErrors.model ? 'is-invalid' : ''
+                                }`}
                               />
                               {editErrors.model && (
-                                <div className="invalid-feedback">{editErrors.model}</div>
+                                <div className="invalid-feedback">
+                                  {editErrors.model}
+                                </div>
                               )}
                             </td>
                             <td>
@@ -284,76 +362,103 @@ const handleDelete = async (id) => {
                                 name="given_name"
                                 value={editData.given_name}
                                 onChange={handleChange}
-                                className={`form-control ${editErrors.given_name ? 'is-invalid' : ''}`}
+                                className={`form-control ${
+                                  editErrors.given_name ? 'is-invalid' : ''
+                                }`}
                               />
                               {editErrors.given_name && (
-                                <div className="invalid-feedback">{editErrors.given_name}</div>
+                                <div className="invalid-feedback">
+                                  {editErrors.given_name}
+                                </div>
                               )}
                             </td>
-                            <td>
+                            {/* <td>
                               <input
                                 name="given_start_name"
                                 value={editData.given_start_name}
                                 onChange={handleChange}
-                                className={`form-control ${editErrors.given_start_name ? 'is-invalid' : ''}`}
+                                className={`form-control ${
+                                  editErrors.given_start_name
+                                    ? 'is-invalid'
+                                    : ''
+                                }`}
                               />
                               {editErrors.given_start_name && (
-                                <div className="invalid-feedback">{editErrors.given_start_name}</div>
+                                <div className="invalid-feedback">
+                                  {editErrors.given_start_name}
+                                </div>
                               )}
-                            </td>
+                            </td> */}
                             <td>
                               <input
                                 name="serial_no"
                                 value={editData.serial_no}
                                 onChange={handleChange}
-                                className={`form-control ${editErrors.serial_no ? 'is-invalid' : ''}`}
+                                className={`form-control ${
+                                  editErrors.serial_no ? 'is-invalid' : ''
+                                }`}
                               />
                               {editErrors.serial_no && (
-                                <div className="invalid-feedback">{editErrors.serial_no}</div>
+                                <div className="invalid-feedback">
+                                  {editErrors.serial_no}
+                                </div>
                               )}
                             </td>
                             <td>
                               <select
-                                  name="inverter_status"
-                                  value={editData.inverter_status || ""}
-                                  onChange={handleChange}
-                                  className="form-select"
-                                >
-                                  <option value="">Select Status</option>
-                                  {statuses.map((status) => (
-                                    <option key={status.id} value={status.id}>
-                                      {status.inverter_status_name}
-                                    </option>
-                                  ))}
-                                </select>
-
+                                name="inverter_status"
+                                value={editData.inverter_status || ''}
+                                onChange={handleChange}
+                                className="form-select"
+                              >
+                                <option value="">Select Status</option>
+                                {statuses.map((status) => (
+                                  <option key={status.id} value={status.id}>
+                                    {status.inverter_status_name}
+                                  </option>
+                                ))}
+                              </select>
                             </td>
                             <td>
                               <input
                                 name="remarks"
                                 value={editData.remarks}
                                 onChange={handleChange}
-                                className={`form-control ${editErrors.remarks ? 'is-invalid' : ''}`}
+                                className={`form-control ${
+                                  editErrors.remarks ? 'is-invalid' : ''
+                                }`}
                               />
                               {editErrors.remarks && (
-                                <div className="invalid-feedback">{editErrors.remarks}</div>
+                                <div className="invalid-feedback">
+                                  {editErrors.remarks}
+                                </div>
                               )}
                             </td>
                             <td className="text-center d-flex gap-2 justify-content-center">
-                              <MDBBtn size="sm" color="success" onClick={handleSave}>
+                              <MDBBtn
+                                size="sm"
+                                color="success"
+                                onClick={handleSave}
+                              >
                                 Save
                               </MDBBtn>
-                              <MDBBtn size="sm" color="secondary" onClick={handleCancel}>
+                              <MDBBtn
+                                size="sm"
+                                color="secondary"
+                                onClick={handleCancel}
+                              >
                                 Cancel
                               </MDBBtn>
                             </td>
                           </>
                         ) : (
+                          // In the display mode (non-editing) row
                           <>
                             <td>{serialNumber}</td>
                             <td>{inv.unit_id}</td>
                             <td>{inv.model}</td>
                             <td>{inv.given_name}</td>
+                            {/*<td>{inv.given_start_name}</td>*/}
                             <td>{inv.serial_no}</td>
                             <td>{inv.inverter_status?.inverter_status_name}</td>
                             <td>{inv.remarks}</td>
@@ -366,13 +471,14 @@ const handleDelete = async (id) => {
                               >
                                 <i className="fas fa-pen"></i>
                               </MDBBtn>
-                              {/* <MDBBtn
+                              <MDBBtn
                                 size="sm"
                                 color="danger"
                                 onClick={() => handleDelete(inv.id)}
                               >
                                 <i className="fas fa-trash"></i>
-                              </MDBBtn> */}
+                              </MDBBtn>
+
                             </td>
                           </>
                         )}
@@ -381,6 +487,30 @@ const handleDelete = async (id) => {
                   })}
                 </MDBTableBody>
               </MDBTable>
+
+              {/* ✅ Pagination controls (like Generator List) */}
+              <div className="d-flex justify-content-between align-items-center mt-3">
+                <span>
+                  Showing {(currentPage - 1) * pageSize + 1} -{' '}
+                  {Math.min(currentPage * pageSize, count)} of {count}
+                </span>
+                <div>
+                  <button
+                    className="btn btn-outline-primary btn-sm me-2"
+                    disabled={currentPage === 1}
+                    onClick={goToPrevPage}
+                  >
+                    ⬅ Prev
+                  </button>
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    disabled={currentPage === Math.ceil(count / pageSize)}
+                    onClick={goToNextPage}
+                  >
+                    Next ➡
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </MDBCardBody>

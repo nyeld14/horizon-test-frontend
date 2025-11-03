@@ -25,6 +25,8 @@ const ServiceRecordsForm = ({ token }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const pageSize = 20;
+  const [searchQuery, setSearchQuery] = useState("");
+
 
   // ✅ Regex rules
   const validationRules = {
@@ -33,12 +35,11 @@ const ServiceRecordsForm = ({ token }) => {
   regex: /^[A-Za-z0-9\s.,!@#\$%\^&\*\(\)\-_+=:;'"?/\\|<>`~]+$/,
   example: "Letters, numbers, spaces, and symbols allowed"
    },
-    repair_done: { regex: /^[A-Za-z\s]+$/, example: "Letters and spaces only" },
-   distance_travelled: {
-  regex: /^\d+(\.\d+)?$/,
-  example: "Numeric (integer or decimal, e.g., 100 or 15.6)"
+   repair_done: { regex: /^[A-Za-z0-9\s\W]+$/, example: "Alphabets, numbers, and special characters allowed" },
+  distance_travelled: {
+  regex: /^\d+(\.\d{1,2})?$/, // only allows 0, 1 or 2 decimals
+  example: "Numeric (e.g., 100 or 15.60)"
 },
-
   hours_spent_on_travel: { regex: /^\d+$/, example: "Numeric only (e.g., 5)" },
     warranty_claim: { regex: /^[A-Za-z0-9\s]+$/, example: "Alphanumeric (e.g., Yes123)" },
     hours_spent_on_site: { regex: /^\d+$/, example: "Numeric only (e.g., 8)" },
@@ -93,14 +94,17 @@ const handleSort = (key) => {
     fetchRecords(currentPage);
   }, [token, currentPage]);
 
-  const fetchRecords = (page) => {
-    axiosInstance
-      .get(`service-records/?page=${page}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        setRecords(res.data.results || []);
-        setCount(res.data.count || 0);
-      });
-  };
+  const fetchRecords = (page, search = "") => {
+  axiosInstance
+    .get(`service-records/?page=${page}&search=${search}`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    })
+    .then((res) => {
+      setRecords(res.data.results || []);
+      setCount(res.data.count || 0);
+    });
+};
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -336,7 +340,7 @@ const handleSort = (key) => {
                   <div className="invalid-feedback">{formErrors.base}</div>
                 )}
               </td>
-              <td><label>Service Location</label></td>
+              <td><label>Given Name/ Location</label></td>
               <td>
                 <input
                   name="service_location"
@@ -358,6 +362,21 @@ const handleSort = (key) => {
           </button>
         </div>
       </form>
+
+    <div className="d-flex justify-content-between align-items-center mb-3">
+  <input
+    type="text"
+    placeholder="🔍 Search by token, inverter, status, repair, problem..."
+    value={searchQuery}
+    onChange={(e) => {
+      setSearchQuery(e.target.value);
+      fetchRecords(1, e.target.value); 
+      setCurrentPage(1);
+    }}
+    className="form-control w-50"
+  />
+</div>
+
 
       <h3 className="h5 mb-3">📋 Service Records List</h3>
 
@@ -382,7 +401,7 @@ const handleSort = (key) => {
                 <th>Warranty Claim</th>
                 <th>Hours on Site(Hr)</th>
                 <th>Base</th>
-                <th>Service Location</th>
+                <th>Given Name / Location</th>
                 <th>Edit</th>
                 <th>Delete</th>
               </tr>
