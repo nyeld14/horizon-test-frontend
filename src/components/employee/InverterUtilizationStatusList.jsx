@@ -23,7 +23,7 @@ const InverterUtilizationStatusList = () => {
       setFormData({ inverter_utilization_status_name: "" });
       setSuccessMessage("✅ Utilization status added successfully!");
 
-      // Clear the message after 3 seconds
+      
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Error submitting form:", error.response?.data || error.message);

@@ -7,7 +7,6 @@ const ViewOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Fetch all orders from backend
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('access_token');
@@ -58,12 +57,11 @@ const ViewOrders = () => {
         </select>
       </div>
 
-      {/* Show form when a PO is selected */}
       {selectedOrder && (
         <EmployeeOrderForm
           orderId={selectedOrder.id}
           poNumber={selectedOrder.po_number}
-          onFormSubmit={fetchOrders} // Refresh orders after submission
+          onFormSubmit={fetchOrders} 
         />
       )}
     </div>

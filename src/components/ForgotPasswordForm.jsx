@@ -8,7 +8,7 @@ const ForgotPasswordForm = () => {
   const [msg, setMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Inline validation
+
   const validateEmail = (value) => {
     if (!value.trim()) return 'Email is required';
     const emailRegex = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,6}$/;
@@ -25,7 +25,7 @@ const ForgotPasswordForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate before submitting
+ 
     const emailError = validateEmail(email);
     if (emailError) {
       setErrors({ email: emailError });
@@ -42,7 +42,7 @@ const ForgotPasswordForm = () => {
       setMsg('✅ Password reset link sent to your email.');
       setEmail('');
 
-      // Redirect after 3s
+
       setTimeout(() => {
         setMsg('');
         window.location.href = '/login';

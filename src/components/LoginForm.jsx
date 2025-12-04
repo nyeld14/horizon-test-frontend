@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { MDBContainer, MDBRow, MDBCol, MDBInput } from 'mdb-react-ui-kit';
 
 import logo from '../assets/images/logo.avif';
-import CustomButton from '../components/CustomButton'; // ✅ Import your custom button
+import CustomButton from '../components/CustomButton';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -12,7 +12,7 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Inline validation rules
+
   const validators = {
     email: (value) => {
       if (!value.trim()) return 'Email is required';
@@ -27,16 +27,16 @@ const LoginForm = () => {
     },
   };
 
-  // Handle field changes
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Inline validation while typing
+
     setErrors((prev) => ({ ...prev, [name]: validators[name](value) }));
   };
 
-  // Handle blur (extra check)
+
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setErrors((prev) => ({ ...prev, [name]: validators[name](value) }));
@@ -46,7 +46,7 @@ const LoginForm = () => {
     e.preventDefault();
     setErrors({});
 
-    // Validate before submit
+
     const newErrors = {};
     Object.keys(validators).forEach((field) => {
       const errorMsg = validators[field](formData[field]);

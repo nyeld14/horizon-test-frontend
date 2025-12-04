@@ -80,7 +80,7 @@ const handleSubmit = async (e) => {
 
   const data = new FormData();
 
-  // Required fields
+ 
   data.append("unit_status", formData.unit_status || ""); 
   data.append("tested_by", formData.tested_by || ""); 
   data.append("inverter", formData.inverter || "");
@@ -93,7 +93,7 @@ const handleSubmit = async (e) => {
   data.append("battery_voltage_end", formData.battery_voltage_end || "");
   data.append("voltage_dip", formData.lowest_battery_voltage_dip || "");
 
-  // ✅ Build items from sections
+ 
   const items = [];
   Object.entries(sections).forEach(([section, questions]) => {
     questions.forEach((q) => {
@@ -108,7 +108,7 @@ const handleSubmit = async (e) => {
 
   data.append("items", JSON.stringify(items));
 
-  // ✅ Build batteries from inputs
+ 
   const batteries = [];
   for (let i = 1; i <= batteryCount; i++) {
     if (formData[`battery_${i}`]) {
@@ -121,7 +121,7 @@ const handleSubmit = async (e) => {
 
   data.append("batteries", JSON.stringify(batteries));
 
-  // ✅ Use `images` state (not formData.images)
+ 
   images.forEach((image) => {
     data.append("images", image);
   });
@@ -155,7 +155,7 @@ const handleSubmit = async (e) => {
         Pre Hire Checklist
       </h2>
 
-      {/* Top Info Table */}
+      
       <table className="w-full border border-black text-sm mb-6">
         <tbody>
           <tr>
@@ -210,7 +210,7 @@ const handleSubmit = async (e) => {
         </tbody>
       </table>
 
-      {/* Checklist Sections */}
+     
       {Object.entries(sections).map(([title, questions]) => (
         <div key={title} className="mb-6">
           <h3 className="text-base font-bold uppercase text-center border border-black bg-gray-200 p-2">
@@ -265,7 +265,7 @@ const handleSubmit = async (e) => {
         </div>
       ))}
 
-      {/* Load Test */}
+    
       <div className="mb-6">
         <h3 className="text-base font-bold uppercase text-center border border-black bg-gray-200 p-2">
           Load Test
@@ -407,7 +407,7 @@ const handleSubmit = async (e) => {
       {Array.from({ length: 5 }, (_, rowIdx) => (
         <tr key={rowIdx}>
           {Array.from({ length: 5 }, (_, colIdx) => {
-            const i = rowIdx + colIdx * 5 + 1; // calculate battery number
+            const i = rowIdx + colIdx * 5 + 1; 
             return (
               <React.Fragment key={i}>
                 <td className="border border-black p-2 text-center">

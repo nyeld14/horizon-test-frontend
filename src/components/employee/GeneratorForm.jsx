@@ -17,9 +17,9 @@ const GeneratorForm = ({ onGeneratorAdded = null }) => {
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
 
-  // regex patterns
+
    const generatorNoRegex = /^[A-Z]{1,3}\d{0,3}[A-Z]?(?:-?\d{1,3})?$/;
-  const numberRegex = /^[0-9]+$/; // only digits
+  const numberRegex = /^[0-9]+$/; 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,7 +29,7 @@ const GeneratorForm = ({ onGeneratorAdded = null }) => {
       [name]: value,
     }));
 
-    validateField(name, value); // validate as user types
+    validateField(name, value); 
   };
 
   const validateField = (name, value) => {
@@ -75,7 +75,6 @@ const GeneratorForm = ({ onGeneratorAdded = null }) => {
       newErrors.fuel_consumption = "Fuel consumption must be a positive number";
     }
 
-    // if generator_no is entered => size and fuel_consumption required
     if (generator_no && (!generator_size || !fuel_consumption)) {
       newErrors.generator_size = "Required if generator no is given";
       newErrors.fuel_consumption = "Required if generator no is given";
@@ -122,7 +121,7 @@ const GeneratorForm = ({ onGeneratorAdded = null }) => {
         {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
         <form onSubmit={handleSubmit}>
-          {/* Generator No */}
+         
           <div className="mb-3">
             <label htmlFor="generator_no" className="form-label">Generator No</label>
             <input
@@ -140,7 +139,7 @@ const GeneratorForm = ({ onGeneratorAdded = null }) => {
             )}
           </div>
 
-          {/* Generator Size */}
+         
           <div className="mb-3">
             <label htmlFor="generator_size" className="form-label">Generator Size</label>
             <input
@@ -158,7 +157,7 @@ const GeneratorForm = ({ onGeneratorAdded = null }) => {
             )}
           </div>
 
-          {/* Fuel Consumption */}
+          
           <div className="mb-4">
             <label htmlFor="fuel_consumption" className="form-label">Fuel Consumption</label>
             <input

@@ -12,7 +12,7 @@ import {
   MDBCardBody,
 } from "mdb-react-ui-kit";
 
-// Format date to 'YYYY-MM-DDTHH:MM'
+
 const formatDateForInput = (isoDateString) => {
   if (!isoDateString) return "";
   const date = new Date(isoDateString);
@@ -103,7 +103,7 @@ const InverterUtilizationList = () => {
           value={formatDateForInput(formData.date)}
           onChange={(e) => {
             handleChange(e);
-            e.target.blur(); // close on select
+            e.target.blur(); 
           }}
           required
           className="form-control pe-5"

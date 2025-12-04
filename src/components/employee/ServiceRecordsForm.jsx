@@ -28,7 +28,7 @@ const ServiceRecordsForm = ({ token }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
 
-  // ✅ Regex rules
+ 
   const validationRules = {
     service_token_number: { regex: /^\d+$/, example: "Numeric only (e.g., 12345)" },
     problem: {
@@ -37,7 +37,7 @@ const ServiceRecordsForm = ({ token }) => {
    },
    repair_done: { regex: /^[A-Za-z0-9\s\W]+$/, example: "Alphabets, numbers, and special characters allowed" },
   distance_travelled: {
-  regex: /^\d+(\.\d{1,2})?$/, // only allows 0, 1 or 2 decimals
+  regex: /^\d+(\.\d{1,2})?$/, 
   example: "Numeric (e.g., 100 or 15.60)"
 },
   hours_spent_on_travel: { regex: /^\d+$/, example: "Numeric only (e.g., 5)" },
@@ -85,7 +85,7 @@ const handleSort = (key) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Fetch inverters + statuses + records
+ 
   useEffect(() => {
     axiosInstance.get("inverters/", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setInverters(res.data.results || []));
@@ -108,7 +108,7 @@ const handleSort = (key) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validateForm()) return; // ❌ Block submit if invalid
+    if (!validateForm()) return; 
 
     const request = editingId
       ? axiosInstance.put(`service-records/${editingId}/`, formData, { headers: { Authorization: `Bearer ${token}` } })

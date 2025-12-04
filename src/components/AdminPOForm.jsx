@@ -28,19 +28,18 @@ const AdminPOForm = () => {
   const [remarks, setRemarks] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  const [errors, setErrors] = useState({}); // inline field errors
-
+  const [errors, setErrors] = useState({}); 
   const locationHook = useLocation();
 
-  // Regex patterns
+
   const patterns = {
-    poNumber: /^[A-Za-z0-9/\- ]+$/, // letters, digits, /, -, space
-    contractNumber: /^[A-Za-z0-9\-]+$/, // letters, digits, dash
-    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // simple email
-    contactNumber: /^[0-9]{7,15}$/, // 7–15 digits
+    poNumber: /^[A-Za-z0-9/\- ]+$/, 
+    contractNumber: /^[A-Za-z0-9\-]+$/, 
+    email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 
+    contactNumber: /^[0-9]{7,15}$/, 
   };
 
-  // Inline validation function
+ 
 const validateField = (name, value) => {
   let error = "";
 
@@ -72,7 +71,7 @@ const validateField = (name, value) => {
       break;
   }
 
-  // 🔹 Dependent: Generator
+
   if (generator_no) {
     if (!generator_size) {
       setErrors((prev) => ({
@@ -93,7 +92,7 @@ const validateField = (name, value) => {
     }
   }
 
-  // 🔹 Dependent: Site Contact
+ 
   if (siteContact_name) {
     if (!siteContact_email) {
       setErrors((prev) => ({
@@ -131,13 +130,13 @@ const validateField = (name, value) => {
     setSuccessMsg("");
     setErrorMsg("");
 
-    // Required field checks
+ 
     if (!poNumber) return setErrorMsg("PO number is required.");
     if (!contractNumber) return setErrorMsg("Contract number is required.");
     if (!clientName) return setErrorMsg("Client name is required.");
     if (!startDate) return setErrorMsg("Start date is required.");
 
-    // Cross-field validation
+   
     if (endDate && new Date(startDate) > new Date(endDate)) {
       return setErrorMsg("End Date must be after Start Date.");
     }
@@ -155,7 +154,7 @@ const validateField = (name, value) => {
     try {
       const token = localStorage.getItem("access_token");
 
-      // Step 1: Create/find client
+   
       const clientResponse = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/clients/`,
         {
@@ -171,7 +170,7 @@ const validateField = (name, value) => {
         ? new Date(endDate).toISOString().split("T")[0]
         : null;
 
-      // Step 2: Create Order
+   
       await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/orders/`,
         {
@@ -198,7 +197,6 @@ const validateField = (name, value) => {
         window.location.href = `${import.meta.env.VITE_BASE_URL}/admin-dashboard`;
       }, 1500);
 
-      // Reset form
       setPoNumber("");
       setContractNumber("");
       setClientName("");
@@ -241,7 +239,7 @@ const validateField = (name, value) => {
         {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
 
         <form onSubmit={handleSubmit}>
-          {/* PO Number */}
+        
           <div className="mb-3">
             <label htmlFor="poNumber" className="form-label">
               PO Number<span className="text-danger">*</span>
@@ -264,7 +262,7 @@ const validateField = (name, value) => {
             )}
           </div>
 
-          {/* Contract Number */}
+       
           <div className="mb-3">
             <label htmlFor="contractNumber" className="form-label">
               Contract Number<span className="text-danger">*</span>
@@ -287,7 +285,6 @@ const validateField = (name, value) => {
             )}
           </div>
 
-          {/* Client Info */}
           <h5 className="mt-4 mb-2 text-dark">Client Info</h5>
           <div className="mb-3">
             <label htmlFor="clientName" className="form-label">
@@ -337,7 +334,7 @@ const validateField = (name, value) => {
             )}
           </div>
 
-          {/* System Info */}
+   
           <div className="mb-3">
             <label htmlFor="location" className="form-label">
               Location
@@ -364,7 +361,7 @@ const validateField = (name, value) => {
             />
           </div>
 
-          {/* Generator Info */}
+          
           <div className="mb-3">
             <label htmlFor="generator_no" className="form-label">
               Generator No
@@ -416,7 +413,7 @@ const validateField = (name, value) => {
               </div>
 
 
-          {/* Site Contact Info */}
+      
           <div className="mb-3">
             <label htmlFor="siteContact_name" className="form-label">
               Site Contact Name
@@ -467,7 +464,7 @@ const validateField = (name, value) => {
               )}
             </div>
 
-          {/* Dates */}
+    
           <div className="mb-3">
             <label htmlFor="startDate" className="form-label">
               Start Date<span className="text-danger">*</span>
@@ -495,7 +492,7 @@ const validateField = (name, value) => {
             />
           </div>
 
-          {/* Remarks */}
+          
           <div className="mb-4">
             <label htmlFor="remarks" className="form-label">
               Remarks

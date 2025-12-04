@@ -33,7 +33,7 @@ const InverterSimDetailList = () => {
 
   const totalPages = Math.ceil(count / pageSize);
 
-  // Validation rules
+
   const validationRules = {
     phone_number: {
       regex: /^\d{5,15}$/,
@@ -65,7 +65,6 @@ const InverterSimDetailList = () => {
 
   
 
-  // Fetch SIM details
   const fetchSimDetails = async (page = 1, search = '') => {
     try {
       let url = `/inverter-sim-details/?page=${page}`;
@@ -79,7 +78,7 @@ const InverterSimDetailList = () => {
     }
   };
 
-  // Fetch inverters for dropdown
+ 
   const fetchInverters = async () => {
     try {
       const response = await axiosInstance.get('/inverters/');
@@ -101,7 +100,7 @@ const InverterSimDetailList = () => {
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  // Add form handlers
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -139,7 +138,7 @@ const InverterSimDetailList = () => {
     }
   };
 
-  // Edit handlers
+ 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditData({ ...editData, [name]: value });
@@ -180,7 +179,7 @@ const InverterSimDetailList = () => {
     }
   };
 
-  // Pagination
+
   const goToNextPage = () => {
     if (currentPage < totalPages) fetchSimDetails(currentPage + 1, searchQuery);
   };
@@ -188,7 +187,6 @@ const InverterSimDetailList = () => {
     if (currentPage > 1) fetchSimDetails(currentPage - 1, searchQuery);
   };
 
-  // Sorting
   const sortData = (key) => {
     let direction = 'ascending';
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -211,7 +209,7 @@ const InverterSimDetailList = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-4">
-      {/* Add SIM Form */}
+    
       <MDBCard className="mb-4 shadow-sm">
         <MDBCardBody>
           <MDBCardTitle className="text-primary fw-bold fs-5 mb-1">
@@ -316,15 +314,14 @@ const InverterSimDetailList = () => {
         </MDBCardBody>
       </MDBCard>
 
-      {/* SIM Table */}
-    {/* SIM Table */}
+    
 <MDBCard>
   <MDBCardBody>
     <MDBCardTitle className="text-secondary fs-5 mb-3">
       📋 SIM Details Listing
     </MDBCardTitle>
 
-    {/* 🔍 Search Bar */}
+   
     <div className="mb-3 d-flex gap-2">
       <input
         type="text"

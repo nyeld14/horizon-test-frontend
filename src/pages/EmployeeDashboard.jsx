@@ -9,7 +9,6 @@ import {
   MDBBtn,
 } from 'mdb-react-ui-kit';
 
-// Employee Components
 import ViewOrders from '../components/employee/ViewOrders';
 import OrderListPage from '../components/employee/OrderListPage';
 import AddLocationForm from '../components/employee/AddLocationForm';
@@ -29,12 +28,16 @@ import InverterStatusChart from '../components/employee/InverterStatusChart';
 import ChecklistForm from '../components/employee/ChecklistForm'; 
 import SubmittedChecklistList from '../components/employee/SubmittedChecklistList';
 import InverterUtilizationChart from '../components/employee/InverterTrendChart'; 
+import InverterDetail from "../components/employee/InverterDetail";
+import AttendancePage from '../components/employee/AttendancePage';
+import LeaveApplicationPage from '../components/employee/LeaveApplicationPage';
+
 
 
 
 const EmployeeDashboard = () => {
   const [showSidebar, setShowSidebar] = useState(true);
-  const [activeTab, setActiveTab] = useState('inverter-summary'); // ✅ Default tab set to inverter summary
+  const [activeTab, setActiveTab] = useState('inverter-summary'); 
   const navigate = useNavigate();
   const token = localStorage.getItem('access_token');
   const userName = localStorage.getItem('user_name') || 'User';
@@ -70,22 +73,24 @@ const EmployeeDashboard = () => {
           </div>
         </MDBContainer>
       </MDBNavbar>
+{showSidebar && (
+  <div
+    className="bg-primary text-white pt-5 d-flex flex-column"
+    style={{
+      width: '200px',
+      height: '100vh',
+      overflowY: 'auto',      // ENABLE VERTICAL SCROLL
+      overflowX: 'hidden',    // DISABLE HORIZONTAL SCROLL
+      paddingTop: '70px',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      scrollbarWidth: 'thin'  // (Optional: Firefox thin scrollbar)
+    }}
+  >
 
-      {showSidebar && (
-        <div
-          className="bg-primary text-white pt-5 d-flex flex-column"
-          style={{
-            width: '200px',
-            minHeight: '100vh',
-            paddingTop: '70px',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-          }}
-        >
           <div className="flex-grow-1">
             <ul className="list-unstyled p-3">
-              {/* ✅ NEW TAB */}
               <li
                 className={`mb-3 ${
                   activeTab === 'inverter-summary' ? 'fw-bold' : ''
@@ -166,31 +171,7 @@ const EmployeeDashboard = () => {
               >
                 <MDBIcon icon="sim-card" className="me-2" /> SIM Details
               </li>
-              {/* <li
-                className={`mb-3 ${
-                  activeTab === 'inverter-utilization-status' ? 'fw-bold' : ''
-                }`}
-                onClick={() => setActiveTab('inverter-utilization-status')}
-              >
-                <MDBIcon icon="chart-bar" className="me-2" /> Utilization Status
-              </li> */}
-              {/* <li
-                className={`mb-3 ${
-                  activeTab === 'inverter-utilization' ? 'fw-bold' : ''
-                }`}
-                onClick={() => setActiveTab('inverter-utilization')}
-              >
-                <MDBIcon icon="battery-three-quarters" className="me-2" />{' '}
-                Inverter Utilization
-              </li> */}
-              {/* <li
-                className={`mb-3 ${
-                  activeTab === 'service-status' ? 'fw-bold' : ''
-                }`}
-                onClick={() => setActiveTab('service-status')}
-              >
-                <MDBIcon icon="wrench" className="me-2" /> Service Status
-              </li> */}
+         
               <li
                 className={`mb-3 ${
                   activeTab === 'add-service-record' ? 'fw-bold' : ''
@@ -222,6 +203,21 @@ const EmployeeDashboard = () => {
                 <MDBIcon icon="clipboard-check" className="me-2" /> Submitted Checklists
               </li>
 
+              <li
+                className={`mb-3 ${activeTab === 'attendance' ? 'fw-bold' : ''}`}
+                onClick={() => setActiveTab('attendance')}
+              >
+                <MDBIcon icon="calendar-check" className="me-2" /> Attendance
+              </li>
+
+              <li
+                className={`mb-3 ${activeTab === 'leave-application' ? 'fw-bold' : ''}`}
+                onClick={() => setActiveTab('leave-application')}
+              >
+                <MDBIcon icon="plane" className="me-2" /> Leave Application
+              </li>
+
+
             </ul>
           </div>
           <div className="p-3">
@@ -242,8 +238,8 @@ const EmployeeDashboard = () => {
           marginLeft: showSidebar ? '200px' : '0',
           paddingTop: '140px',
           minHeight: '100vh',
-          position: 'relative', // ✅ Ensure z-index works
-          zIndex: 1, // ✅ Bring this above chart
+          position: 'relative', 
+          zIndex: 1, 
           backgroundColor: '#fff',
         }}
         className="p-4"
@@ -270,6 +266,10 @@ const EmployeeDashboard = () => {
               'upload-usage': 'Usage  Report',
               'check-list': ' ',
               'submitted-checklists': '',
+              'attendance': 'Attendance',
+               'leave-application': 'Leave Application',
+
+
             }[activeTab]
           }
         </h2>
@@ -302,6 +302,9 @@ const EmployeeDashboard = () => {
         {activeTab === 'upload-usage' && <UsageReport token={token} />}
         {activeTab === 'check-list' && <ChecklistForm token={token} />}
         {activeTab === 'submitted-checklists' && <SubmittedChecklistList />}
+        {activeTab === 'attendance' && <AttendancePage />}
+        {activeTab === 'leave-application' && <LeaveApplicationPage />}
+
       </div>
     </div>
   );

@@ -10,6 +10,9 @@ import {
   MDBTableBody,
 } from 'mdb-react-ui-kit';
 
+import { Link } from 'react-router-dom';
+
+
 const InverterList = () => {
   const [inverters, setInverters] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -74,13 +77,13 @@ const InverterList = () => {
     },
   };
 
-// --- Utility: normalize text input ---
+
 const normalizeText = (val) => {
   if (!val) return '';
   return val
-    .replace(/–|—/g, '-') // Replace en/em dashes with a regular hyphen
-    .replace(/\u00A0/g, ' ') // Replace non-breaking space with normal space
-    .replace(/\s+/g, ' ') // Collapse multiple spaces
+    .replace(/–|—/g, '-') 
+    .replace(/\u00A0/g, ' ') 
+    .replace(/\s+/g, ' ') 
     .trim();
 };
 
@@ -129,7 +132,7 @@ const normalizeText = (val) => {
 
   const handleChange = (e) => {
   const { name, value } = e.target;
-  const cleanedValue = normalizeText(value); // ✅ Clean Unicode before validating
+  const cleanedValue = normalizeText(value);
   setEditData((prev) => ({ ...prev, [name]: cleanedValue }));
 
   const error = validateField(name, cleanedValue);
@@ -452,10 +455,15 @@ const normalizeText = (val) => {
                             </td>
                           </>
                         ) : (
-                          // In the display mode (non-editing) row
+                         
                           <>
                             <td>{serialNumber}</td>
-                            <td>{inv.unit_id}</td>
+                            <td>
+                              <Link  to={`/employee-dashboard/inverters/${inv.id}`} className="text-decoration-underline">
+                                {inv.unit_id}
+                              </Link>
+                            </td>
+
                             <td>{inv.model}</td>
                             <td>{inv.given_name}</td>
                             {/*<td>{inv.given_start_name}</td>*/}
@@ -488,7 +496,7 @@ const normalizeText = (val) => {
                 </MDBTableBody>
               </MDBTable>
 
-              {/* ✅ Pagination controls (like Generator List) */}
+             
               <div className="d-flex justify-content-between align-items-center mt-3">
                 <span>
                   Showing {(currentPage - 1) * pageSize + 1} -{' '}

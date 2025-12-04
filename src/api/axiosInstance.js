@@ -1,10 +1,9 @@
-// src/api/axiosInstance.js
+
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const baseURL = `${import.meta.env.VITE_BASE_URL}/api/`;
 
-// ✅ Create instance
 const axiosInstance = axios.create({
   baseURL,
   headers: {
@@ -12,7 +11,6 @@ const axiosInstance = axios.create({
   },
 });
 
-// 🔔 Helper toast functions
 const showPermissionToast = () => {
   toast.error("🚫 You do not have permission to perform this action.", {
     position: "top-right",
@@ -42,7 +40,6 @@ const showServerToast = () => {
   });
 };
 
-// 🔐 Attach access token to each request
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token");
@@ -54,13 +51,11 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 🔄 Auto-refresh token on 401 + handle 403 and errors globally
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // 🧱 Network-level errors (no response at all)
     if (!error.response) {
       showNetworkToast();
       return Promise.reject(error);
@@ -68,7 +63,6 @@ axiosInstance.interceptors.response.use(
 
     const { status, data } = error.response;
 
-    // 🔄 Handle 401 Unauthorized — Token expired, refresh logic
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       const refresh_token = localStorage.getItem("refresh_token");
@@ -102,12 +96,10 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // 🚫 Handle 403 Forbidden — Permission denied
     if (status === 403 && data?.detail === "You do not have permission to perform this action.") {
       showPermissionToast();
     }
 
-    // ⚙️ Handle 500+ server errors
     if (status >= 500) {
       showServerToast();
     }

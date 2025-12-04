@@ -6,7 +6,7 @@ import LoginForm from './components/LoginForm';
 import RegisterUser from './components/RegisterUser';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
-import GuestDashboard from './pages/GuestDashboard';
+
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminPOForm from './components/AdminPOForm';
 import AdminPOList from './components/AdminPOList';
@@ -16,12 +16,16 @@ import InverterStatusChart from './components/employee/InverterStatusChart';
 import Checklist from './components/employee/ChecklistForm';
 import SubmittedChecklistList from './components/employee/SubmittedChecklistList';
 import InverterUtilizationChart from './components/employee/InverterTrendChart';
+import InverterDetail from './components/employee/InverterDetail';
+
+// 🔽 make sure these paths match your actual folder structure
+import AdminAttendancePage from './components/AdminAttendancePage';
+import AdminLeaveApprovalPage from './components/AdminLeaveApprovalPage';
 
 function App() {
   return (
     <Router>
       <>
-        {/* ✅ Toast container for global popup messages */}
         <ToastContainer
           position="top-right"
           autoClose={4000}
@@ -33,8 +37,8 @@ function App() {
           theme="colored"
         />
 
-        {/* ✅ Application routes */}
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<LoginForm />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/forgot-password" element={<ForgotPasswordForm />} />
@@ -43,7 +47,6 @@ function App() {
             element={<ResetPasswordForm />}
           />
 
-          {/* Registration */}
           <Route path="/register/admin" element={<RegisterUser role="admin" />} />
           <Route
             path="/register/employee"
@@ -51,7 +54,7 @@ function App() {
           />
           <Route path="/register/guest" element={<RegisterUser role="guest" />} />
 
-          {/* Admin Dashboard */}
+          {/* ADMIN DASHBOARD + nested pages */}
           <Route
             path="/admin-dashboard"
             element={
@@ -60,13 +63,20 @@ function App() {
               </ProtectedRoute>
             }
           >
+            {/* default dashboard content */}
             <Route index element={<InverterStatusChart mode="admin" />} />
+
+            {/* existing admin pages */}
             <Route path="add-po" element={<AdminPOForm />} />
             <Route path="view-pos" element={<AdminPOList />} />
             <Route path="trend-chart" element={<InverterUtilizationChart />} />
+
+            {/* ✅ NEW admin attendance & leave approval pages */}
+            <Route path="attendance" element={<AdminAttendancePage />} />
+            <Route path="leave-approval" element={<AdminLeaveApprovalPage />} />
           </Route>
 
-          {/* Employee Dashboard */}
+          {/* EMPLOYEE DASHBOARD (tabs handled inside EmployeeDashboard) */}
           <Route
             path="/employee-dashboard"
             element={
@@ -74,18 +84,14 @@ function App() {
                 <EmployeeDashboard />
               </ProtectedRoute>
             }
-          >
-            <Route path="checklist" element={<Checklist />} />
-            <Route path="submitted-checklists" element={<SubmittedChecklistList />} />
-            <Route path="trend-chart" element={<InverterUtilizationChart />} />
-          </Route>
+          />
 
-          {/* Guest Dashboard */}
+          {/* Employee unit detail page */}
           <Route
-            path="/guest-dashboard"
+            path="/employee-dashboard/inverters/:id"
             element={
-              <ProtectedRoute allowedRoles={['guest']}>
-                <GuestDashboard />
+              <ProtectedRoute allowedRoles={['employee']}>
+                <InverterDetail />
               </ProtectedRoute>
             }
           />

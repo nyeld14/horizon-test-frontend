@@ -33,11 +33,11 @@ const SubmittedChecklistList = () => {
     }
   };
 
-  // ✅ Fetch full details on click
+ 
   const fetchChecklistDetails = async (id) => {
     try {
       const res = await axiosInstance.get(`/checklists/${id}/`);
-      setSelectedChecklist(res.data); // full details including items + batteries + images
+      setSelectedChecklist(res.data); 
     } catch (error) {
       console.error("Error fetching checklist details:", error.response?.data || error.message);
     }
@@ -112,7 +112,7 @@ const SubmittedChecklistList = () => {
                         <td>{serialNumber}</td>
                         <td
                           className="text-primary cursor-pointer fw-bold"
-                          onClick={() => fetchChecklistDetails(chk.id)} // ✅ full details on click
+                          onClick={() => fetchChecklistDetails(chk.id)} 
                         >
                           {chk.unit_no}
                         </td>
@@ -138,7 +138,7 @@ const SubmittedChecklistList = () => {
         </MDBCardBody>
       </MDBCard>
 
-      {/* ✅ Details Section */}
+    
       {selectedChecklist && (
         <MDBCard className="shadow-sm mb-5">
           <MDBCardBody>
@@ -146,7 +146,7 @@ const SubmittedChecklistList = () => {
               📌 Checklist Details for Unit {selectedChecklist.unit_no}
             </MDBCardTitle>
 
-            {/* Items table */}
+          
             <MDBTable bordered small>
               <MDBTableHead light>
                 <tr>
@@ -168,7 +168,7 @@ const SubmittedChecklistList = () => {
               </MDBTableBody>
             </MDBTable>
 
-            {/* Battery table */}
+           
             <h6 className="mt-4 fw-semibold">🔋 Battery Voltages</h6>
             <MDBTable bordered small>
               <MDBTableHead light>
@@ -213,7 +213,7 @@ const SubmittedChecklistList = () => {
         </MDBCard>
       )}
 
-      {/* Pagination */}
+     
       <div className="d-flex justify-content-between items-center px-2 mb-5">
         <p className="text-muted">
           Showing {(currentPage - 1) * pageSize + 1} -{" "}

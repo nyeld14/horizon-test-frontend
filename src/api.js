@@ -1,4 +1,4 @@
-// src/api.js
+
 const BASE_URL = `${import.meta.env.VITE_BASE_URL}/auth`;
 
 export const registerUser = async (data) => {

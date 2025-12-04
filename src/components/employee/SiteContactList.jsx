@@ -53,22 +53,22 @@ const SiteContactList = () => {
   const validateFields = (data) => {
   const newErrors = {};
 
-  // Name: letters + spaces
+  
   if (data.site_contact_name && !/^[A-Za-z\s]+$/.test(data.site_contact_name)) {
     newErrors.site_contact_name = "Name can only contain letters and spaces.";
   }
 
-  // Email: basic pattern
+
   if (data.site_contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.site_contact_email)) {
     newErrors.site_contact_email = "Invalid email format.";
   }
 
-  // Number: 10–15 digits
+  
   if (data.site_contact_number && !/^\d{10,15}$/.test(data.site_contact_number)) {
     newErrors.site_contact_number = "Contact number must be 10–15 digits.";
   }
 
-  // Cross-field validation (all-or-nothing)
+ 
   if ((data.site_contact_name || data.site_contact_email || data.site_contact_number) &&
       (!data.site_contact_name || !data.site_contact_email || !data.site_contact_number)) {
     newErrors.form = "Site contact name, email, and number must all be provided together.";
@@ -94,7 +94,7 @@ const handleSort = (key) => {
     setErrors(validationErrors);
     return;
   }
-  setErrors({}); // clear errors if valid
+  setErrors({}); 
 
   try {
     await axiosInstance.post('/site-contacts/', formData);
@@ -164,7 +164,7 @@ const sortedContacts = [...contacts].sort((a, b) => {
   const handleDeleteContact = async (id) => {
     try {
       await axiosInstance.delete(`/site-contacts/${id}/`);
-      fetchContacts(currentPage); // refresh list
+      fetchContacts(currentPage); 
     } catch (err) {
       console.error('Error deleting contact', err);
     }
@@ -176,7 +176,7 @@ const sortedContacts = [...contacts].sort((a, b) => {
     <div className="p-4">
       <MDBCard className="mb-4 shadow-sm">
         <MDBCardBody>
-          {/* Updated Heading Above Form */}
+         
           <h4 className="text-primary fw-bold mb-2">Add Site Contact</h4>
           <h6 className="text-muted mb-4">
             Fill out the form below to add a new site contact
@@ -352,7 +352,7 @@ const sortedContacts = [...contacts].sort((a, b) => {
         </MDBCardBody>
       </MDBCard>
 
-      {/* Pagination */}
+    
       <div className="mt-4 d-flex justify-content-center gap-2">
         {Array.from({ length: totalPages }, (_, i) => (
           <MDBBtn

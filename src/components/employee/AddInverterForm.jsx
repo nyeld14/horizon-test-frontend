@@ -1,4 +1,4 @@
-// AddInverterForm.jsx
+
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import {
@@ -24,7 +24,6 @@ const AddInverterForm = () => {
   const [statuses, setStatuses] = useState([]);
   const [errors, setErrors] = useState({});
 
-  // Fetch inverter statuses
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
@@ -37,7 +36,7 @@ const AddInverterForm = () => {
     fetchStatuses();
   }, []);
 
-  // --- Regex validation rules ---
+  
   const validationRules = {
     unit_id: {
       regex: /^HZE\s*-\s*\d{2,5}\/\d{2,5}(?:-\d{2,5})?$/,
@@ -65,14 +64,14 @@ const AddInverterForm = () => {
     },
   };
 
-  // --- Normalize input ---
+
   const normalizeInput = (value, name) => {
     let val = value.replace(/[–—]/g, "-").replace(/\u00A0/g, " ").trim();
     if (name === "serial_no") val = val.toUpperCase();
     return val;
   };
 
-  // --- Handle field change ---
+ 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const normalizedValue = normalizeInput(value, name);
@@ -93,7 +92,6 @@ const AddInverterForm = () => {
     }
   };
 
-  // --- Handle submit ---
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -116,7 +114,7 @@ const AddInverterForm = () => {
     try {
       const postData = {
         ...formData,
-        inverter_status_input: formData.inverter_status, // Send ID instead of name
+        inverter_status_input: formData.inverter_status, 
       };
       delete postData.inverter_status;
 
@@ -187,7 +185,6 @@ const AddInverterForm = () => {
             </div>
           ))}
 
-          {/* Inverter Status */}
           <div className="mb-3">
             <label htmlFor="inverter_status" className="form-label">
               Inverter Status
@@ -209,7 +206,7 @@ const AddInverterForm = () => {
             </select>
           </div>
 
-          {/* Remarks */}
+         
           <div className="mb-4">
             <label htmlFor="remarks" className="form-label">
               Remarks

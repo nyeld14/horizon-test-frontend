@@ -11,7 +11,7 @@ const ResetPasswordForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  // Strong password regex (8+ chars, 1 uppercase, 1 number, 1 special char)
+ 
   const strongPasswordRegex =
     /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
 
@@ -27,14 +27,14 @@ const ResetPasswordForm = () => {
     return "";
   };
 
-  // Password strength indicator
+ 
   const getPasswordStrength = (value) => {
     let score = 0;
     if (value.length >= 8) score++;
     if (/[A-Z]/.test(value)) score++;
     if (/\d/.test(value)) score++;
     if (/[!@#$%^&*]/.test(value)) score++;
-    return score; // 0 to 4
+    return score; 
   };
 
   const handleSubmit = async (e) => {
@@ -104,7 +104,6 @@ const ResetPasswordForm = () => {
           <p className="text-danger small">{errors.password}</p>
         )}
 
-        {/* Password Strength Indicator */}
         {password && (
           <MDBProgress height="10">
             <MDBProgress

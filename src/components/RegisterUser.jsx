@@ -24,7 +24,7 @@ const RegisterUser = ({ userLabel = 'User' }) => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Inline validation rules
+
   const validators = {
     name: (value) => {
       if (!value.trim()) return 'Name is required';
@@ -49,28 +49,28 @@ const RegisterUser = ({ userLabel = 'User' }) => {
     },
   };
 
-  // Handle field changes
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Live validation (on change)
+    
     setErrors((prev) => ({ ...prev, [name]: validators[name](value) }));
   };
 
-  // Handle blur (extra safety)
+ 
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setErrors((prev) => ({ ...prev, [name]: validators[name](value) }));
   };
 
-  // Submit
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
     setSuccessMsg('');
 
-    // Validate all fields before submit
+   
     const newErrors = {};
     Object.keys(validators).forEach((field) => {
       const errorMsg = validators[field](formData[field]);

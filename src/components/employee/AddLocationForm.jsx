@@ -1,4 +1,4 @@
-// src/components/employee/AddLocationForm.jsx
+
 import React, { useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
 
@@ -8,7 +8,7 @@ const AddLocationForm = () => {
   const [error, setError] = useState("");
   const [validationError, setValidationError] = useState("");
 
-  // Regex rule: alphanumeric + spaces only
+
   const locationRegex = /^[A-Za-z0-9 ]+$/;
 
   const handleAddLocation = async (e) => {
@@ -17,7 +17,7 @@ const AddLocationForm = () => {
     setError("");
     setValidationError("");
 
-    // frontend regex validation
+  
     if (!locationRegex.test(locationName.trim())) {
       setValidationError(
         "Example: 'New York 123' (alphanumeric and spaces only)"
@@ -45,7 +45,7 @@ const AddLocationForm = () => {
     } catch (err) {
       console.error(err.response?.data || err.message);
 
-      // If backend returned validation errors
+    
       if (err.response?.data?.location_name) {
         setValidationError(err.response.data.location_name[0]);
       } else {

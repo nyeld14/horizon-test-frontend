@@ -94,7 +94,7 @@ const OrderListPage = () => {
 
   const handleSort = (field) => {
   if (sortField === field) {
-    // toggle asc/desc
+ 
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   } else {
     setSortField(field);
@@ -175,7 +175,7 @@ const handleSave = async () => {
       }
     });
 
-    // If no changes, just exit
+
     if (Object.keys(changes).length === 0) {
       alert("No changes made.");
       setEditingId(null);
@@ -184,7 +184,7 @@ const handleSave = async () => {
 
     await axios.patch(
       `${import.meta.env.VITE_BASE_URL}/api/orders/${editingId}/`,
-      changes, // only send changed fields
+      changes, 
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -217,7 +217,7 @@ const handleSave = async () => {
         }
       );
       alert('Order deleted successfully');
-      fetchFilledOrders(); // Refresh the list
+      fetchFilledOrders(); 
     } catch (error) {
       console.error('Delete failed', error.response?.data || error.message);
       alert('Delete failed');
@@ -452,7 +452,7 @@ const handleSave = async () => {
                 </MDBTableBody>
               </MDBTable>
 
-              {/* Pagination */}
+            
               <div className="d-flex justify-content-between align-items-center mt-3">
                 <span className="text-muted">
                   Page {currentPage} of {totalPages}

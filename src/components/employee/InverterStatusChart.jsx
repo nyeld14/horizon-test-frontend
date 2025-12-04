@@ -17,7 +17,6 @@ const COLORS = {
   Hired: '#008000',
 };
 
-// Normalize status only for display in chart
 const normalizeStatus = (status) => {
   if (!status) return 'Unknown';
   const s = status.trim().toLowerCase();
@@ -28,7 +27,7 @@ const normalizeStatus = (status) => {
   return status;
 };
 
-// Helper to group inverters by key
+
 const groupInvertersBy = (list, keyFn) => {
   return list.reduce((acc, item) => {
     const key = keyFn(item);
@@ -85,13 +84,13 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
     let response;
 
     if (mode === 'admin') {
-      // Admin sees only Operational(Ready to Hire)
+      
       response = await axiosInstance.get(
         `/inverters/?status=Operational(Ready to Hire)`
       );
       setInverterList(response.data.results || []);
     } else {
-      // Employee: map normalized status to backend variants
+      
       const statusMapping = {
         'Operational(Ready to Hire)': ['Operational(Ready to Hire)'],
         'Breakdown': ['Breakdown'],
@@ -119,7 +118,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
         const response = await axiosInstance.get('/api/inverter-status-summary/');
         const result = response.data;
 
-        // Aggregate statuses for pie chart
+       
         const transformed = Object.keys(result).reduce((acc, status) => {
           const normalized = normalizeStatus(status);
           const existing = acc.find((item) => item.name === normalized);
@@ -133,7 +132,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
 
         setData(transformed);
 
-        // Admin default view: Operational(Ready to Hire)
+        
         if (mode === 'admin') {
           fetchInvertersByStatus('Operational(Ready to Hire)');
         }
@@ -154,7 +153,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
 
   return (
     <div style={{ width: '100%', textAlign: 'center', paddingBottom: '2rem' }}>
-      {/* Pie Chart for employees */}
+      
       {mode !== 'admin' && (
         <div className="d-flex justify-content-center align-items-start gap-4 flex-wrap">
           <div style={{ width: '400px', height: 400 }}>
@@ -180,7 +179,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
             </ResponsiveContainer>
           </div>
 
-          {/* Summary Table */}
+         
           <div>
             <table
               style={{
@@ -230,7 +229,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
         </div>
       )}
 
-      {/* Admin Table */}
+      
       {mode === 'admin' && selectedStatus && (
         <div className="mt-5">
           <h5 className="text-dark fw-bold mb-3">Ready to Hire Units</h5>
@@ -275,7 +274,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
         </div>
       )}
 
-      {/* Employee Table */}
+      
       {mode !== 'admin' && selectedStatus && (
         <div className="mt-5">
           <h5 className="text-dark fw-bold mb-3">Batteries with status: {selectedStatus}</h5>

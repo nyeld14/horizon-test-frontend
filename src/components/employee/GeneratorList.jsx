@@ -23,11 +23,11 @@ const GeneratorList = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const pageSize = 20;
 
-  // regex rules
+ 
  const generatorNoRegex = /^[A-Z]{1,3}\d{0,3}[A-Z]?(?:-?\d{1,3})?$/;
  const numberRegex = /^[0-9]+$/;
 
-  // Fetch generators
+ 
   const fetchGenerators = async (page = 1) => {
     try {
       const res = await axiosInstance.get(`/generators/?page=${page}`);
@@ -48,7 +48,7 @@ const GeneratorList = () => {
     fetchGenerators();
   }, []);
 
-  // Edit logic
+
   const handleEdit = (generator) => {
     setEditingId(generator.id);
     setEditData({ ...generator });
@@ -101,7 +101,7 @@ const GeneratorList = () => {
       newErrors.fuel_consumption = 'Fuel consumption must be a positive number';
     }
 
-    // all-or-nothing rule
+  
     if (generator_no && (!generator_size || !fuel_consumption)) {
       newErrors.generator_size = 'Required if generator no is given';
       newErrors.fuel_consumption = 'Required if generator no is given';
@@ -147,7 +147,7 @@ const GeneratorList = () => {
     }
   };
 
-  // Pagination
+  
   const goToNextPage = () => {
     if (nextPage) {
       const nextPageNum =
@@ -164,7 +164,7 @@ const GeneratorList = () => {
     }
   };
 
-  // Sorting
+ 
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -173,7 +173,7 @@ const GeneratorList = () => {
     setSortConfig({ key, direction });
   };
 
-  // Filtered and sorted generators
+
   const filteredGenerators = generators.filter((gen) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -210,7 +210,7 @@ const GeneratorList = () => {
             🔌 Generator List
           </MDBCardTitle>
 
-          {/* Search Input */}
+          
           <input
             type="text"
             placeholder="Search by Generator No, Size or Fuel Consumption"
@@ -338,7 +338,7 @@ const GeneratorList = () => {
         </MDBCardBody>
       </MDBCard>
 
-      {/* Pagination */}
+     
       <div className="d-flex justify-content-between items-center px-2 mb-5">
         <p className="text-muted">
           Showing {(currentPage - 1) * pageSize + 1} -{' '}

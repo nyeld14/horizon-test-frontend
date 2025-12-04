@@ -8,23 +8,16 @@ import {
   MDBContainer,
   MDBBtn,
 } from 'mdb-react-ui-kit';
-import InverterStatusChart from '../components/employee/InverterStatusChart';
-import InverterUtilizationChart from '../components/employee/InverterTrendChart';
-
-// Inside JSX
-<InverterStatusChart mode="admin" />;
 
 const AdminDashboard = () => {
   const [showSidebar, setShowSidebar] = useState(true);
   const navigate = useNavigate();
-
-  // Get user name from localStorage
   const userName = localStorage.getItem('user_name') || 'User';
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_role');
-    localStorage.removeItem('user_name'); // clear user name on logout
+    localStorage.removeItem('user_name');
     navigate('/login');
   };
 
@@ -41,22 +34,49 @@ const AdminDashboard = () => {
           position: 'fixed',
           top: 0,
           left: 0,
-          paddingTop: '70px', // for top navbar spacing
+          paddingTop: '70px',
         }}
       >
         <div className="flex-grow-1">
           <ul className="list-unstyled p-3">
-           
-            <li>
-              <Link to="view-pos" className="text-white text-decoration-none">
+            <li className="mb-3">
+              <Link
+                to="/admin-dashboard"
+                className="text-white text-decoration-none"
+              >
+                <MDBIcon icon="chart-pie" className="me-2" /> Dashboard
+              </Link>
+            </li>
+
+            <li className="mb-3">
+              <Link
+                to="view-pos"
+                className="text-white text-decoration-none"
+              >
                 <MDBIcon icon="file-alt" className="me-2" /> View POs
               </Link>
             </li>
-            
+
+            <li className="mb-3">
+              <Link
+                to="attendance"
+                className="text-white text-decoration-none"
+              >
+                <MDBIcon icon="user-check" className="me-2" /> Attendance
+              </Link>
+            </li>
+
+            <li className="mb-3">
+              <Link
+                to="leave-approval"
+                className="text-white text-decoration-none"
+              >
+                <MDBIcon icon="calendar-check" className="me-2" /> Leave Approval
+              </Link>
+            </li>
           </ul>
         </div>
 
-        {/* Logout Button at Bottom */}
         <div className="p-3">
           <MDBBtn
             color="danger"
@@ -93,14 +113,13 @@ const AdminDashboard = () => {
             </Link>
           </div>
 
-          {/* Welcome message aligned right */}
           <div className="text-white me-3">
             Welcome, <strong>{userName}</strong>!
           </div>
         </MDBContainer>
       </MDBNavbar>
 
-      {/* Main Content */}
+      {/* Main Content (where nested routes render) */}
       <div
         style={{
           marginLeft: showSidebar ? '200px' : '0',

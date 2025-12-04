@@ -33,7 +33,7 @@ const InverterTrendLineChart = () => {
   const [models, setModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState('');
 
-  // 🔹 Fetch available inverter models
+ 
   useEffect(() => {
     const fetchModels = async () => {
       try {
@@ -47,7 +47,7 @@ const InverterTrendLineChart = () => {
     fetchModels();
   }, []);
 
-  // 🔹 Auto adjust date range
+  
   useEffect(() => {
     const end = dayjs();
     let start = end;
@@ -63,7 +63,6 @@ const InverterTrendLineChart = () => {
     setEndDate(end.format('YYYY-MM-DD'));
   }, [dateRange]);
 
-  // 🔹 Fetch inverter trend data
   useEffect(() => {
     const fetchTrendData = async () => {
       try {
@@ -72,7 +71,7 @@ const InverterTrendLineChart = () => {
         const url = `/inverter-status-trend/?start_date=${startDate}&end_date=${endDate}${selectedModel ? `&model=${selectedModel}` : ''}`;
         const res = await axiosInstance.get(url);
 
-        // Smooth transition for carried-forward data
+       
         const data = Array.isArray(res.data) ? res.data : [];
         setTrendData(data);
       } catch (err) {
@@ -91,12 +90,12 @@ const InverterTrendLineChart = () => {
   return (
     <div className="p-4 text-center">
       <h4 className="fw-bold mb-3">
-        Inverter Status Trend ({startDate} → {endDate})
+        Battery Utilization  ({startDate} → {endDate})
       </h4>
 
-      {/* 🔸 Filters Section */}
+     
       <div className="d-flex justify-content-center align-items-center gap-3 mb-3 flex-wrap">
-        {/* Range Selector */}
+      
         <div>
           <label className="fw-semibold me-2">Range:</label>
           <select
@@ -114,7 +113,7 @@ const InverterTrendLineChart = () => {
           </select>
         </div>
 
-        {/* Custom Date Range */}
+        
         {dateRange === 'custom' && (
           <div className="d-flex align-items-center gap-2">
             <label>From:</label>
@@ -134,7 +133,7 @@ const InverterTrendLineChart = () => {
           </div>
         )}
 
-        {/* Model Filter */}
+       
         <div>
           <label className="fw-semibold me-2">Model:</label>
           <select
@@ -150,7 +149,7 @@ const InverterTrendLineChart = () => {
         </div>
       </div>
 
-      {/* 🔸 Status Filters */}
+     
       <div className="d-flex justify-content-center flex-wrap gap-4 mb-4">
         {STATUS_OPTIONS.map(status => (
           <label key={status} className="d-flex align-items-center gap-2">
@@ -172,7 +171,7 @@ const InverterTrendLineChart = () => {
         ))}
       </div>
 
-      {/* 🔸 Chart Display */}
+      
       {loading ? (
         <p>Loading inverter trend data...</p>
       ) : error ? (

@@ -1,4 +1,4 @@
-// src/auth.js
+
 import jwtDecode from 'jwt-decode';
 
 export const saveAuth = (data) => {
@@ -14,10 +14,9 @@ export const logout = () => {
   localStorage.removeItem('auth');
 };
 
-// ✅ New helper function
 export const getUsernameFromToken = () => {
   const auth = getAuth();
-  const token = auth?.access; // or 'access_token' depending on your structure
+  const token = auth?.access;
   if (!token) return null;
 
   try {

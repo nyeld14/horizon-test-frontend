@@ -1,4 +1,4 @@
-// src/components/LogoutButton.jsx
+
 import { useNavigate } from 'react-router-dom';
 
 const LogoutButton = () => {

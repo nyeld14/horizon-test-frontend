@@ -14,7 +14,7 @@ const AdminPOList = () => {
   const [orders, setOrders] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
-  const [errors, setErrors] = useState({}); // 🔹 inline field errors
+  const [errors, setErrors] = useState({}); 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [nextPage, setNextPage] = useState(null);
@@ -30,7 +30,6 @@ const AdminPOList = () => {
   const [showWithoutEndDate, setShowWithoutEndDate] = useState(true);
 
 
-  // 🔹 Regex patterns
   const patterns = {
     po_number: /^[A-Za-z0-9/\- ]+$/,
     contract_no: /^[A-Za-z0-9\-]+$/,
@@ -86,7 +85,7 @@ const AdminPOList = () => {
     setErrors({});
   };
 
-  // 🔹 Validation function
+
   const validateField = (name, value) => {
     let error = '';
 
@@ -128,7 +127,7 @@ const AdminPOList = () => {
   };
 
   const handleSave = async () => {
-    // Prevent save if errors exist
+ 
     if (Object.values(errors).some((err) => err)) {
       alert('Please fix validation errors before saving.');
       return;
