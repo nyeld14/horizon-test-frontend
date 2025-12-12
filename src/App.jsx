@@ -17,8 +17,8 @@ import Checklist from './components/employee/ChecklistForm';
 import SubmittedChecklistList from './components/employee/SubmittedChecklistList';
 import InverterUtilizationChart from './components/employee/InverterTrendChart';
 import InverterDetail from './components/employee/InverterDetail';
+import UsageReport from './components/employee/UsageReport';
 
-// 🔽 make sure these paths match your actual folder structure
 import AdminAttendancePage from './components/AdminAttendancePage';
 import AdminLeaveApprovalPage from './components/AdminLeaveApprovalPage';
 

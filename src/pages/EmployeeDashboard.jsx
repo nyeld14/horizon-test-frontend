@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import {
+  Link,
+  Outlet,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import {
   MDBNavbar,
   MDBNavbarBrand,
@@ -24,29 +29,46 @@ import InverterUtilizationList from '../components/employee/InverterUtilizationL
 import ServiceStatusList from '../components/employee/ServiceStatusList';
 import ServiceRecordsForm from '../components/employee/ServiceRecordsForm';
 import UsageReport from '../components/employee/UsageReport';
-import InverterStatusChart from '../components/employee/InverterStatusChart'; 
-import ChecklistForm from '../components/employee/ChecklistForm'; 
+import InverterStatusChart from '../components/employee/InverterStatusChart';
+import ChecklistForm from '../components/employee/ChecklistForm';
 import SubmittedChecklistList from '../components/employee/SubmittedChecklistList';
-import InverterUtilizationChart from '../components/employee/InverterTrendChart'; 
-import InverterDetail from "../components/employee/InverterDetail";
+import InverterUtilizationChart from '../components/employee/InverterTrendChart';
+import InverterDetail from '../components/employee/InverterDetail';
 import AttendancePage from '../components/employee/AttendancePage';
 import LeaveApplicationPage from '../components/employee/LeaveApplicationPage';
 
-
-
-
 const EmployeeDashboard = () => {
   const [showSidebar, setShowSidebar] = useState(true);
-  const [activeTab, setActiveTab] = useState('inverter-summary'); 
+  const [activeTab, setActiveTab] = useState('inverter-summary');
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const navigate = useNavigate();
   const token = localStorage.getItem('access_token');
   const userName = localStorage.getItem('user_name') || 'User';
+
+  // ✅ When URL has ?tab=..., update activeTab
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_name');
     navigate('/login');
+  };
+
+  // ✅ Helper: change tab and keep tab in URL
+  const changeTab = (tabKey) => {
+    setActiveTab(tabKey);
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', tabKey);
+    // we DON'T touch "po" here, so when coming from OrderList with ?po=...
+    // it will be preserved for UsageReport
+    setSearchParams(params);
   };
 
   return (
@@ -73,153 +95,173 @@ const EmployeeDashboard = () => {
           </div>
         </MDBContainer>
       </MDBNavbar>
-{showSidebar && (
-  <div
-    className="bg-primary text-white pt-5 d-flex flex-column"
-    style={{
-      width: '200px',
-      height: '100vh',
-      overflowY: 'auto',      // ENABLE VERTICAL SCROLL
-      overflowX: 'hidden',    // DISABLE HORIZONTAL SCROLL
-      paddingTop: '70px',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      scrollbarWidth: 'thin'  // (Optional: Firefox thin scrollbar)
-    }}
-  >
 
+      {showSidebar && (
+        <div
+          className="bg-primary text-white pt-5 d-flex flex-column"
+          style={{
+            width: '200px',
+            height: '100vh',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            paddingTop: '70px',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            scrollbarWidth: 'thin',
+          }}
+        >
           <div className="flex-grow-1">
             <ul className="list-unstyled p-3">
               <li
                 className={`mb-3 ${
                   activeTab === 'inverter-summary' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('inverter-summary')}
+                onClick={() => changeTab('inverter-summary')}
               >
                 <MDBIcon icon="chart-pie" className="me-2" /> Battery Summary
               </li>
 
-            <li
-                className={`mb-3 ${activeTab === 'trend-chart' ? 'fw-bold' : ''}`}
-                onClick={() => setActiveTab('trend-chart')}
+              <li
+                className={`mb-3 ${
+                  activeTab === 'trend-chart' ? 'fw-bold' : ''
+                }`}
+                onClick={() => changeTab('trend-chart')}
               >
-                <MDBIcon icon="chart-line" className="me-2" /> Battery Utilisation Chart
+                <MDBIcon icon="chart-line" className="me-2" /> Battery
+                Utilisation Chart
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'order-list' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('order-list')}
+                onClick={() => changeTab('order-list')}
               >
                 <MDBIcon icon="file-alt" className="me-2" /> Order List
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'add-location' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('add-location')}
+                onClick={() => changeTab('add-location')}
               >
                 <MDBIcon icon="map-marker-alt" className="me-2" /> Add Location
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'add-inverter' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('add-inverter')}
+                onClick={() => changeTab('add-inverter')}
               >
                 <MDBIcon icon="plug" className="me-2" /> Add Battery
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'inverter-list' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('inverter-list')}
+                onClick={() => changeTab('inverter-list')}
               >
                 <MDBIcon icon="list" className="me-2" /> Battery List
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'add-generator' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('add-generator')}
+                onClick={() => changeTab('add-generator')}
               >
                 <MDBIcon icon="cogs" className="me-2" /> Add Generator
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'generator-list' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('generator-list')}
+                onClick={() => changeTab('generator-list')}
               >
                 <MDBIcon icon="th-list" className="me-2" /> Generator List
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'site-contact-list' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('site-contact-list')}
+                onClick={() => changeTab('site-contact-list')}
               >
                 <MDBIcon icon="address-book" className="me-2" /> Site Contact
                 List
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'inverter-sim-details' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('inverter-sim-details')}
+                onClick={() => changeTab('inverter-sim-details')}
               >
                 <MDBIcon icon="sim-card" className="me-2" /> SIM Details
               </li>
-         
+
               <li
                 className={`mb-3 ${
                   activeTab === 'add-service-record' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('add-service-record')}
+                onClick={() => changeTab('add-service-record')}
               >
                 <MDBIcon icon="tools" className="me-2" /> Add Service Record
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'upload-usage' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('upload-usage')}
+                onClick={() => changeTab('upload-usage')}
               >
                 <MDBIcon icon="upload" className="me-2" /> Usage
               </li>
+
               <li
                 className={`mb-3 ${
                   activeTab === 'check-list' ? 'fw-bold' : ''
                 }`}
-                onClick={() => setActiveTab('check-list')}
+                onClick={() => changeTab('check-list')}
               >
                 <MDBIcon icon="search" className="me-2" /> Pre Hire Checklist
               </li>
+
               <li
-                className={`mb-3 ${activeTab === 'submitted-checklists' ? 'fw-bold' : ''}`}
-                onClick={() => setActiveTab('submitted-checklists')}
+                className={`mb-3 ${
+                  activeTab === 'submitted-checklists' ? 'fw-bold' : ''
+                }`}
+                onClick={() => changeTab('submitted-checklists')}
               >
-                <MDBIcon icon="clipboard-check" className="me-2" /> Submitted Checklists
+                <MDBIcon icon="clipboard-check" className="me-2" /> Submitted
+                Checklists
               </li>
 
               <li
-                className={`mb-3 ${activeTab === 'attendance' ? 'fw-bold' : ''}`}
-                onClick={() => setActiveTab('attendance')}
+                className={`mb-3 ${
+                  activeTab === 'attendance' ? 'fw-bold' : ''
+                }`}
+                onClick={() => changeTab('attendance')}
               >
                 <MDBIcon icon="calendar-check" className="me-2" /> Attendance
               </li>
 
               <li
-                className={`mb-3 ${activeTab === 'leave-application' ? 'fw-bold' : ''}`}
-                onClick={() => setActiveTab('leave-application')}
+                className={`mb-3 ${
+                  activeTab === 'leave-application' ? 'fw-bold' : ''
+                }`}
+                onClick={() => changeTab('leave-application')}
               >
                 <MDBIcon icon="plane" className="me-2" /> Leave Application
               </li>
-
-
             </ul>
           </div>
+
           <div className="p-3">
             <MDBBtn
               color="danger"
@@ -238,8 +280,8 @@ const EmployeeDashboard = () => {
           marginLeft: showSidebar ? '200px' : '0',
           paddingTop: '140px',
           minHeight: '100vh',
-          position: 'relative', 
-          zIndex: 1, 
+          position: 'relative',
+          zIndex: 1,
           backgroundColor: '#fff',
         }}
         className="p-4"
@@ -247,8 +289,8 @@ const EmployeeDashboard = () => {
         <h2 className="fw-bold text-dark mt-5">
           {
             {
-              'inverter-summary': 'Battery Summary', 
-              'trend-chart': 'Battery Utilisation Chart', 
+              'inverter-summary': 'Battery Summary',
+              'trend-chart': 'Battery Utilisation Chart',
               'view-orders': 'View Orders',
               'order-list': 'All Order Listings',
               'add-location': 'Add New Location',
@@ -263,18 +305,17 @@ const EmployeeDashboard = () => {
               'inverter-utilization': 'Inverter Utilization',
               'service-status': 'Service Status',
               'add-service-record': 'Add Service Record',
-              'upload-usage': 'Usage  Report',
+              'upload-usage': 'Usage Report',
               'check-list': ' ',
               'submitted-checklists': '',
               'attendance': 'Attendance',
-               'leave-application': 'Leave Application',
-
-
+              'leave-application': 'Leave Application',
             }[activeTab]
           }
         </h2>
-        {activeTab === 'inverter-summary' && <InverterStatusChart />}{' '}
-        {activeTab === 'trend-chart' && <InverterUtilizationChart />} 
+
+        {activeTab === 'inverter-summary' && <InverterStatusChart />}
+        {activeTab === 'trend-chart' && <InverterUtilizationChart />}
         {activeTab === 'view-orders' && <ViewOrders />}
         {activeTab === 'order-list' && <OrderListPage />}
         {activeTab === 'add-location' && <AddLocationForm token={token} />}
@@ -285,7 +326,9 @@ const EmployeeDashboard = () => {
         {activeTab === 'inverter-list' && <InverterList token={token} />}
         {activeTab === 'add-generator' && <GeneratorForm token={token} />}
         {activeTab === 'generator-list' && <GeneratorList token={token} />}
-        {activeTab === 'site-contact-list' && <SiteContactList token={token} />}
+        {activeTab === 'site-contact-list' && (
+          <SiteContactList token={token} />
+        )}
         {activeTab === 'inverter-sim-details' && (
           <InverterSimDetailList token={token} />
         )}
@@ -304,7 +347,6 @@ const EmployeeDashboard = () => {
         {activeTab === 'submitted-checklists' && <SubmittedChecklistList />}
         {activeTab === 'attendance' && <AttendancePage />}
         {activeTab === 'leave-application' && <LeaveApplicationPage />}
-
       </div>
     </div>
   );

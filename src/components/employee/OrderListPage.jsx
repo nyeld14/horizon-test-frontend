@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate,Link } from 'react-router-dom';
 import {
   MDBCard,
   MDBCardBody,
@@ -9,9 +10,9 @@ import {
   MDBTableBody,
   MDBBtn,
 } from 'mdb-react-ui-kit';
-import { Pencil } from 'lucide-react';
 
 const OrderListPage = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
@@ -27,9 +28,9 @@ const OrderListPage = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   const [sortField, setSortField] = useState(null);
-  const [sortOrder, setSortOrder] = useState('asc'); 
+  const [sortOrder, setSortOrder] = useState('asc');
 
-
+  const [showWithEnd, setShowWithEnd] = useState(false);
 
   useEffect(() => {
     fetchFilledOrders();
@@ -63,7 +64,7 @@ const OrderListPage = () => {
     }
   };
 
-  const fetchFilledOrders = async  (page = 1) => {
+  const fetchFilledOrders = async (page = 1) => {
     try {
       const token = localStorage.getItem('access_token');
       const res = await axios.get(
@@ -73,7 +74,7 @@ const OrderListPage = () => {
         }
       );
 
-      const filledOrders = res.data.results.filter(
+      const filledOrders = (res.data.results || []).filter(
         (order) =>
           order.location_name ||
           order.inverter_name ||
@@ -84,7 +85,7 @@ const OrderListPage = () => {
       );
 
       setOrders(filledOrders);
-      setTotalPages(Math.ceil(res.data.count / 20)); 
+      setTotalPages(Math.ceil((res.data.count || filledOrders.length) / 20));
       setCurrentPage(page);
     } catch (error) {
       console.error(error);
@@ -93,52 +94,60 @@ const OrderListPage = () => {
   };
 
   const handleSort = (field) => {
-  if (sortField === field) {
- 
-    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-  } else {
-    setSortField(field);
-    setSortOrder('asc');
-  }
-};
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
 
+  const normalize = (val) =>
+    val === null || val === undefined ? '' : String(val);
 
-const filteredOrders = orders.filter(
-  (order) =>
-    order.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.contract_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (order.inverter_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (order.generator_no || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (order.location_name || '').toLowerCase().includes(searchQuery.toLowerCase())
-);
+  const filteredOrders = orders.filter((order) => {
+    if (!showWithEnd) {
+      const hasEnd = !!normalize(order.end_date).trim();
+      if (hasEnd) return false;
+    }
 
-const sortedOrders = [...filteredOrders].sort((a, b) => {
-  if (!sortField) return 0;
+    const q = searchQuery.toLowerCase();
+    if (!q) return true;
 
-  const aVal = a[sortField] || '';
-  const bVal = b[sortField] || '';
+    return (
+      normalize(order.po_number).toLowerCase().includes(q) ||
+      normalize(order.contract_no).toLowerCase().includes(q) ||
+      normalize(order.inverter_name).toLowerCase().includes(q) ||
+      normalize(order.generator_no).toLowerCase().includes(q) ||
+      normalize(order.location_name).toLowerCase().includes(q) ||
+      normalize(order.client_name).toLowerCase().includes(q) ||
+      normalize(order.site_contact_name).toLowerCase().includes(q)
+    );
+  });
 
-  if (sortOrder === 'asc') {
-    return aVal.toString().localeCompare(bVal.toString(), undefined, { numeric: true });
-  } else {
-    return bVal.toString().localeCompare(aVal.toString(), undefined, { numeric: true });
-  }
-});
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (!sortField) return 0;
 
+    const aVal = normalize(a[sortField]);
+    const bVal = normalize(b[sortField]);
+
+    if (sortOrder === 'asc') {
+      return aVal.localeCompare(bVal, undefined, { numeric: true });
+    }
+    return bVal.localeCompare(aVal, undefined, { numeric: true });
+  });
 
   const handleEdit = (order) => {
     setEditingId(order.id);
     setEditData({
       location_id: order.location_id || '',
-      // inverter_id: order.inverter_id || '',
       generator_no: order.generator_no || '',
-      site_contact_id: order.site_contact_id_id || '',
-      start_date: order.start_date?.split('T')[0] || '',
-      end_date: order.end_date?.split('T')[0] || '',
+      site_contact_id: order.site_contact_id || '',
+      start_date: order.start_date?.split?.('T')?.[0] || '',
+      end_date: order.end_date?.split?.('T')?.[0] || '',
       remarks: order.remarks || '',
-      fuel_price: order.fuel_price ?? '',   
+      fuel_price: order.fuel_price ?? '',
       co2_emission_per_litre: order.co2_emission_per_litre ?? '',
-
     });
   };
 
@@ -147,60 +156,58 @@ const sortedOrders = [...filteredOrders].sort((a, b) => {
     setEditData((prev) => ({ ...prev, [name]: value }));
   };
 
-const handleSave = async () => {
-  try {
-    const token = localStorage.getItem('access_token');
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
 
-    const originalOrder = orders.find((order) => order.id === editingId);
-    if (!originalOrder) return;
+      const originalOrder = orders.find((order) => order.id === editingId);
+      if (!originalOrder) return;
 
-    const allowedFields = [
-      'location_id',
-      'generator_no',
-      'site_contact_id',
-      'start_date',
-      'end_date',
-      'remarks',
-      'fuel_price',
-      'co2_emission_per_litre',
-    ];
+      const allowedFields = [
+        'location_id',
+        'generator_no',
+        'site_contact_id',
+        'start_date',
+        'end_date',
+        'remarks',
+        'fuel_price',
+        'co2_emission_per_litre',
+      ];
 
-    const changes = {};
-    allowedFields.forEach((field) => {
-      const originalValue = originalOrder[field] ?? "";
-      const newValue = editData[field] ?? "";
+      const changes = {};
+      allowedFields.forEach((field) => {
+        const originalValue = originalOrder[field] ?? '';
+        const newValue = editData[field] ?? '';
 
-      if (String(originalValue) !== String(newValue)) {
-        changes[field] = newValue === "" ? null : newValue;
+        if (String(originalValue) !== String(newValue)) {
+          changes[field] = newValue === '' ? null : newValue;
+        }
+      });
+
+      if (Object.keys(changes).length === 0) {
+        alert('No changes made.');
+        setEditingId(null);
+        return;
       }
-    });
 
+      await axios.patch(
+        `${import.meta.env.VITE_BASE_URL}/api/orders/${editingId}/`,
+        changes,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    if (Object.keys(changes).length === 0) {
-      alert("No changes made.");
+      alert('Order updated successfully');
       setEditingId(null);
-      return;
+      fetchFilledOrders(currentPage);
+    } catch (error) {
+      console.error('Update failed', error.response?.data || error.message);
+      alert('Update failed');
     }
-
-    await axios.patch(
-      `${import.meta.env.VITE_BASE_URL}/api/orders/${editingId}/`,
-      changes, 
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    alert("Order updated successfully");
-    setEditingId(null);
-    fetchFilledOrders();
-  } catch (error) {
-    console.error("Update failed", error.response?.data || error.message);
-    alert("Update failed");
-  }
-};
-
+  };
 
   const handleDelete = async (orderId) => {
     const confirmDelete = window.confirm(
@@ -217,15 +224,13 @@ const handleSave = async () => {
         }
       );
       alert('Order deleted successfully');
-      fetchFilledOrders(); 
+      fetchFilledOrders(currentPage);
     } catch (error) {
       console.error('Delete failed', error.response?.data || error.message);
       alert('Delete failed');
     }
   };
 
-
- 
   return (
     <div className="max-w-7xl mx-auto mt-10 px-4">
       <MDBCard className="shadow-sm mb-4">
@@ -238,16 +243,31 @@ const handleSave = async () => {
             <div className="alert alert-danger text-center">{errorMsg}</div>
           )}
 
-          <input
-            type="text"
-            className="form-control mb-3"
-            placeholder="Search by PO number, Inverter name , Contract number ,Generator no "
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
+          <div className="d-flex gap-2 mb-3 align-items-center">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by PO number, Client, Inverter name, Contract number, Generator no, Location"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+
+            <div className="form-check ms-2">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="showWithEnd"
+                checked={showWithEnd}
+                onChange={(e) => setShowWithEnd(e.target.checked)}
+              />
+              <label className="form-check-label" htmlFor="showWithEnd">
+                Show POs with End Date
+              </label>
+            </div>
+          </div>
 
           {orders.length === 0 ? (
             <p className="text-muted text-center">
@@ -256,50 +276,146 @@ const handleSave = async () => {
           ) : (
             <div className="table-responsive">
               <MDBTable hover bordered align="middle">
-                
-       <MDBTableHead light>
-                      <tr>
-                        <th>Si. No</th>
-                        <th onClick={() => handleSort("po_number")} style={{ cursor: "pointer" }}>
-                          PO Number {sortField === "po_number" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th onClick={() => handleSort("contract_no")} style={{ cursor: "pointer" }}>
-                          Contract No {sortField === "contract_no" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th onClick={() => handleSort("location_name")} style={{ cursor: "pointer" }}>
-                          Location {sortField === "location_name" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th onClick={() => handleSort("inverter_name")} style={{ cursor: "pointer" }}>
-                          Inverter {sortField === "inverter_name" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th onClick={() => handleSort("generator_no")} style={{ cursor: "pointer" }}>
-                          Generator No {sortField === "generator_no" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th onClick={() => handleSort("site_contact_name")} style={{ cursor: "pointer" }}>
-                          Site Contact {sortField === "site_contact_name" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th onClick={() => handleSort("start_date")} style={{ cursor: "pointer" }}>
-                          Start Date {sortField === "start_date" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th onClick={() => handleSort("end_date")} style={{ cursor: "pointer" }}>
-                          End Date {sortField === "end_date" ? (sortOrder === "asc" ? "▲" : "▼") : ""}
-                        </th>
-                        <th>Remarks</th>
-                        <th>Fuel Price</th>
-                        <th>CO₂/litre</th>
-                        <th>Actions</th>
-                      </tr>
-             </MDBTableHead>
+                <MDBTableHead light>
+                  <tr>
+                    <th>Si. No</th>
+                    <th
+                      onClick={() => handleSort('po_number')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      PO Number{' '}
+                      {sortField === 'po_number'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('contract_no')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Contract No{' '}
+                      {sortField === 'contract_no'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('client_name')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Client{' '}
+                      {sortField === 'client_name'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('location_name')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Location{' '}
+                      {sortField === 'location_name'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('inverter_name')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Inverter{' '}
+                      {sortField === 'inverter_name'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('generator_no')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Generator No{' '}
+                      {sortField === 'generator_no'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('site_contact_name')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Site Contact{' '}
+                      {sortField === 'site_contact_name'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('start_date')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Start Date{' '}
+                      {sortField === 'start_date'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th
+                      onClick={() => handleSort('end_date')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      End Date{' '}
+                      {sortField === 'end_date'
+                        ? sortOrder === 'asc'
+                          ? '▲'
+                          : '▼'
+                        : ''}
+                    </th>
+                    <th>Remarks</th>
+                    <th>Fuel Price</th>
+                    <th>CO₂/litre</th>
+                    <th>Actions</th>
+                  </tr>
+                </MDBTableHead>
 
                 <MDBTableBody>
                   {sortedOrders.map((order, index) => (
                     <tr key={order.id}>
                       <td>{(currentPage - 1) * 20 + index + 1}</td>
-                      <td>{order.po_number}</td>
+
+                      {/* ✅ PO click → EmployeeDashboard Usage tab with po in URL */}
+                        <td>
+                          {order.po_number ? (
+                            <Link
+                              to={`/employee-dashboard?tab=upload-usage&po=${encodeURIComponent(
+                                order.po_number
+                              )}`}
+                              style={{
+                                textDecoration: 'underline', // keep underline
+                                // remove this line if you want default browser blue
+                                // color: 'inherit',
+                              }}
+                            >
+                              {order.po_number}
+                            </Link>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+
+
                       <td>{order.contract_no}</td>
 
                       {editingId === order.id ? (
                         <>
+                          <td>{/* client not editable here */}</td>
                           <td>
                             <select
                               name="location_id"
@@ -316,7 +432,6 @@ const handleSave = async () => {
                             </select>
                           </td>
                           <td>{order.inverter_name || '—'}</td>
-
                           <td>
                             <select
                               name="generator_no"
@@ -377,8 +492,8 @@ const handleSave = async () => {
                             <input
                               name="fuel_price"
                               type="text"
-                              inputMode="decimal" 
-                              pattern="[0-9]*" 
+                              inputMode="decimal"
+                              pattern="[0-9]*"
                               value={editData.fuel_price}
                               onChange={handleChange}
                               className="form-control"
@@ -388,36 +503,40 @@ const handleSave = async () => {
                             <input
                               name="co2_emission_per_litre"
                               type="text"
-                              inputMode="decimal" 
-                              pattern="[0-9]*"  
+                              inputMode="decimal"
+                              pattern="[0-9]*"
                               value={editData.co2_emission_per_litre}
                               onChange={handleChange}
                               className="form-control"
                             />
                           </td>
                           <td className="text-center d-flex gap-2">
-                              <MDBBtn
-                                size="sm"
-                                color="success"
-                                onClick={handleSave}
-                              >
-                                Save
-                              </MDBBtn>
-                              <MDBBtn
-                                size="sm"
-                                color="secondary"
-                                onClick={() => {
-                                  setEditingId(null);
-                                  setEditData({});
-                                }}
-                              >
-                                Cancel
-                              </MDBBtn>
-                            </td>
-
+                            <MDBBtn
+                              size="sm"
+                              color="success"
+                              onClick={handleSave}
+                            >
+                              Save
+                            </MDBBtn>
+                            <MDBBtn
+                              size="sm"
+                              color="secondary"
+                              onClick={() => {
+                                setEditingId(null);
+                                setEditData({});
+                              }}
+                            >
+                              Cancel
+                            </MDBBtn>
+                          </td>
                         </>
                       ) : (
                         <>
+                          <td>
+                            {order.client_name ||
+                              (order.client && order.client.client_name) ||
+                              '—'}
+                          </td>
                           <td>{order.location_name || '—'}</td>
                           <td>{order.inverter_name || '—'}</td>
                           <td>{order.generator_no || '—'}</td>
@@ -434,8 +553,7 @@ const handleSave = async () => {
                               className="text-white"
                               onClick={() => handleEdit(order)}
                             >
-                             <i className="fas fa-pen"></i>
-
+                              <i className="fas fa-pen"></i>
                             </MDBBtn>
                             <MDBBtn
                               size="sm"
@@ -452,7 +570,6 @@ const handleSave = async () => {
                 </MDBTableBody>
               </MDBTable>
 
-            
               <div className="d-flex justify-content-between align-items-center mt-3">
                 <span className="text-muted">
                   Page {currentPage} of {totalPages}
@@ -461,7 +578,7 @@ const handleSave = async () => {
                   <MDBBtn
                     size="sm"
                     disabled={currentPage === 1}
-                    onClick={() =>  fetchFilledOrders(currentPage - 1)}
+                    onClick={() => fetchFilledOrders(currentPage - 1)}
                     className="me-2"
                   >
                     Previous
