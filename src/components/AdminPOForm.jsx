@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   MDBBtn,
@@ -7,6 +7,7 @@ import {
   MDBCardBody,
   MDBCardTitle,
 } from "mdb-react-ui-kit";
+
 
 const AdminPOForm = () => {
   const [poNumber, setPoNumber] = useState("");
@@ -30,6 +31,8 @@ const AdminPOForm = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [errors, setErrors] = useState({}); 
   const locationHook = useLocation();
+  const navigate = useNavigate();
+
 
 
   const patterns = {
@@ -193,9 +196,13 @@ const validateField = (name, value) => {
       );
 
       setSuccessMsg("PO and client details added successfully!");
+      // setTimeout(() => {
+      //   window.location.href = `${import.meta.env.VITE_BASE_URL}/admin-dashboard`;
+      // }, 1500);
       setTimeout(() => {
-        window.location.href = `${import.meta.env.VITE_BASE_URL}/admin-dashboard`;
-      }, 1500);
+      navigate("/admin-dashboard");
+    }, 1500);
+
 
       setPoNumber("");
       setContractNumber("");
