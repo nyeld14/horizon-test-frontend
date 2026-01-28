@@ -44,3 +44,16 @@
 .gradient-custom-2 {
   background: linear-gradient(to right, #6a11cb, #2575fc);
 }
+
+
+.opacity-50 {
+  opacity: 0.4;
+}
+
+
+.highlight-name {
+  background-color: #ffc107;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+}

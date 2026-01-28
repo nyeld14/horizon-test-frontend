@@ -156,7 +156,6 @@ const normalizeText = (val) => {
       unit_id: normalizeText(editData.unit_id),
       model: normalizeText(editData.model),
       given_name: normalizeText(editData.given_name),
-      given_start_name: normalizeText(editData.given_start_name),
       serial_no: normalizeText(editData.serial_no),
       inverter_status_input: editData.inverter_status || null,
       remarks: normalizeText(editData.remarks),

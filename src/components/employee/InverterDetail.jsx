@@ -249,3 +249,5 @@ const InverterDetail = () => {
 };
 
 export default InverterDetail;
+
+
