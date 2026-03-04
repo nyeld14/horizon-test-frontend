@@ -88,8 +88,12 @@ const InverterTrendLineChart = () => {
   const formatXAxisLabel = (value) => dayjs(value).format('DD MMM');
 
   return (
-    <div className="p-4 text-center">
-      <h4 className="fw-bold mb-3">
+ <div className="p-4 text-center">
+  <h4
+     className="fw-bold mb-4 mt-3 mt-md-4"
+    style={{ marginTop: '40px' }}
+  >
+
         Battery Utilization  ({startDate} → {endDate})
       </h4>
 

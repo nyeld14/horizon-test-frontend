@@ -47,7 +47,7 @@ const AddInverterForm = () => {
       example: "176/300",
     },
     given_name: {
-      regex: /^[A-Za-z0-9\s/]{3,50}$/,
+      regex: /^[A-Za-z0-9\s/-]{3,100}$/,
       example: "H79 176/300ALLYE UNIT",
     },
     given_start_name: {
@@ -66,7 +66,7 @@ const AddInverterForm = () => {
 
 
   const normalizeInput = (value, name) => {
-    let val = value.replace(/[–—]/g, "-").replace(/\u00A0/g, " ").trim();
+    let val = value.replace(/[–—]/g, "-").replace(/\u00A0/g, " ");
     if (name === "serial_no") val = val.toUpperCase();
     return val;
   };
@@ -114,6 +114,7 @@ const AddInverterForm = () => {
     try {
       const postData = {
         ...formData,
+        given_name: formData.given_name.trim(),
         inverter_status_input: formData.inverter_status, 
       };
       delete postData.inverter_status;
@@ -153,9 +154,11 @@ const AddInverterForm = () => {
   };
 
   return (
-    <MDBCard className="my-5 mx-auto" style={{ maxWidth: "600px" }}>
+    <MDBCard className="my-5 mx-auto" style={{ maxWidth: "600px",marginTop: "80px"  }}>
+
+  
       <MDBCardHeader className="bg-primary text-white text-center">
-        <h4 className="fw-bold mb-0">Add Inverter</h4>
+        <h4 className="fw-bold mb-0">Add Battery</h4>
       </MDBCardHeader>
       <MDBCardBody>
         <form onSubmit={handleSubmit}>

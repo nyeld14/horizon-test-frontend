@@ -151,7 +151,9 @@ const handleSubmit = async (e) => {
       onSubmit={handleSubmit}
       className="max-w-full mx-auto p-6 bg-white border border-black"
     >
-      <h2 className="text-2xl font-bold mb-6 text-center uppercase">
+      <h2 className="text-2xl font-bold mb-6 text-center uppercase"
+       style={{ marginTop: '40px' }}
+      >
         Pre Hire Checklist
       </h2>
 

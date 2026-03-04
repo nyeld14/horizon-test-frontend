@@ -112,7 +112,11 @@ const GeneratorForm = ({ onGeneratorAdded = null }) => {
   };
 
   return (
-    <MDBCard className="p-4 shadow-sm bg-white">
+    <MDBCard
+  className="p-4 shadow-sm bg-white mx-auto"
+  style={{ marginTop: "30px", maxWidth: "900px" }}
+>
+
       <MDBCardBody>
         <MDBCardTitle className="mb-4 text-primary fw-bold text-center">
           Add Generator

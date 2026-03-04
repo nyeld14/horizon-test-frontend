@@ -1,26 +1,29 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-import LoginForm from './components/LoginForm';
-import RegisterUser from './components/RegisterUser';
-import AdminDashboard from './pages/AdminDashboard';
-import EmployeeDashboard from './pages/EmployeeDashboard';
+import LoginForm from "./components/LoginForm";
+import RegisterUser from "./components/RegisterUser";
+import AdminDashboard from "./pages/AdminDashboard";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
 
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminPOForm from './components/AdminPOForm';
-import AdminPOList from './components/AdminPOList';
-import ForgotPasswordForm from './components/ForgotPasswordForm';
-import ResetPasswordForm from './components/ResetPasswordForm';
-import InverterStatusChart from './components/employee/InverterStatusChart';
-import Checklist from './components/employee/ChecklistForm';
-import SubmittedChecklistList from './components/employee/SubmittedChecklistList';
-import InverterUtilizationChart from './components/employee/InverterTrendChart';
-import InverterDetail from './components/employee/InverterDetail';
-import UsageReport from './components/employee/UsageReport';
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminPOForm from "./components/AdminPOForm";
+import AdminPOList from "./components/AdminPOList";
+import ForgotPasswordForm from "./components/ForgotPasswordForm";
+import ResetPasswordForm from "./components/ResetPasswordForm";
+import InverterStatusChart from "./components/employee/InverterStatusChart";
+import Checklist from "./components/employee/ChecklistForm";
+import SubmittedChecklistList from "./components/employee/SubmittedChecklistList";
+import InverterUtilizationChart from "./components/employee/InverterTrendChart";
+import InverterDetail from "./components/employee/InverterDetail";
+import UsageReport from "./components/employee/UsageReport";
 
-import AdminAttendancePage from './components/AdminAttendancePage';
-import AdminLeaveApprovalPage from './components/AdminLeaveApprovalPage';
+import AdminAttendancePage from "./components/AdminAttendancePage";
+import AdminLeaveApprovalPage from "./components/AdminLeaveApprovalPage";
+
+/* ✅ NEW IMPORT */
+import DistroDetail from "./components/distro/DistroDetail";
 
 function App() {
   return (
@@ -54,44 +57,49 @@ function App() {
           />
           <Route path="/register/guest" element={<RegisterUser role="guest" />} />
 
-          {/* ADMIN DASHBOARD + nested pages */}
+          {/* ADMIN DASHBOARD */}
           <Route
             path="/admin-dashboard"
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
           >
-            {/* default dashboard content */}
             <Route index element={<InverterStatusChart mode="admin" />} />
-
-            {/* existing admin pages */}
             <Route path="add-po" element={<AdminPOForm />} />
             <Route path="view-pos" element={<AdminPOList />} />
             <Route path="trend-chart" element={<InverterUtilizationChart />} />
-
-            {/* ✅ NEW admin attendance & leave approval pages */}
             <Route path="attendance" element={<AdminAttendancePage />} />
             <Route path="leave-approval" element={<AdminLeaveApprovalPage />} />
           </Route>
 
-          {/* EMPLOYEE DASHBOARD (tabs handled inside EmployeeDashboard) */}
+          {/* EMPLOYEE DASHBOARD */}
           <Route
             path="/employee-dashboard"
             element={
-              <ProtectedRoute allowedRoles={['employee']}>
+              <ProtectedRoute allowedRoles={["employee"]}>
                 <EmployeeDashboard />
               </ProtectedRoute>
             }
           />
 
-          {/* Employee unit detail page */}
+          {/* Employee inverter detail */}
           <Route
             path="/employee-dashboard/inverters/:id"
             element={
-              <ProtectedRoute allowedRoles={['employee']}>
+              <ProtectedRoute allowedRoles={["employee"]}>
                 <InverterDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ✅ Distro detail page */}
+          <Route
+            path="/distro/:id"
+            element={
+              <ProtectedRoute allowedRoles={["employee"]}>
+                <DistroDetail />
               </ProtectedRoute>
             }
           />

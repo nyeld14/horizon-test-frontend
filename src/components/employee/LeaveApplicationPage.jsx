@@ -70,7 +70,8 @@ const LeaveApplicationPage = () => {
   };
 
   return (
-    <div className="mt-3">
+      <div className="max-w-7xl mx-auto mt-10 px-4"
+     style={{ marginTop: "80px" }} >
       <form className="row g-2 mb-4" onSubmit={handleSubmit}>
         <div className="col-md-3">
           <label className="form-label">Leave Type</label>

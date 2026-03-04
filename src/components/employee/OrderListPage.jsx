@@ -233,9 +233,10 @@ const OrderListPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto mt-10 px-4">
-      <MDBCard className="shadow-sm mb-4">
+      <MDBCard className="shadow-sm mb-3">
         <MDBCardBody>
-          <MDBCardTitle className="text-primary fw-bold fs-4 mb-3">
+          <MDBCardTitle className="text-primary fw-bold fs-4 mb-3"
+           style={{ marginTop: '40px' }}>
             📄 Orders List
           </MDBCardTitle>
 

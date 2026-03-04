@@ -130,45 +130,45 @@ const normalizeText = (val) => {
     setEditErrors({});
   };
 
-  const handleChange = (e) => {
+ const handleChange = (e) => {
   const { name, value } = e.target;
-  const cleanedValue = normalizeText(value);
-  setEditData((prev) => ({ ...prev, [name]: cleanedValue }));
 
-  const error = validateField(name, cleanedValue);
+  // DO NOT normalize while typing
+  setEditData((prev) => ({ ...prev, [name]: value }));
+
+  // Validate raw value
+  const error = validateField(name, value);
   setEditErrors((prev) => ({ ...prev, [name]: error }));
 };
-
   const handleSave = async () => {
-    const newErrors = {};
-    Object.keys(validationRules).forEach((field) => {
-      const error = validateField(field, editData[field] || '');
-      if (error) newErrors[field] = error;
-    });
+  const newErrors = {};
+  Object.keys(validationRules).forEach((field) => {
+    const error = validateField(field, editData[field] || '');
+    if (error) newErrors[field] = error;
+  });
 
-    if (Object.keys(newErrors).length > 0) {
-      setEditErrors(newErrors);
-      return;
-    }
+  if (Object.keys(newErrors).length > 0) {
+    setEditErrors(newErrors);
+    return;
+  }
 
-    try {
+  try {
     const payload = {
       unit_id: normalizeText(editData.unit_id),
       model: normalizeText(editData.model),
-      given_name: normalizeText(editData.given_name),
+      given_name: normalizeText(editData.given_name), // normalized only here
       serial_no: normalizeText(editData.serial_no),
       inverter_status_input: editData.inverter_status || null,
       remarks: normalizeText(editData.remarks),
-  };
+    };
 
-
-      await axiosInstance.patch(`/inverters/${editingId}/`, payload);
-      alert('Inverter updated successfully');
-      setEditingId(null);
-      fetchInverters(currentPage);
-    } catch (error) {
-      console.error('Update failed', error.response?.data || error);
-
+    await axiosInstance.patch(`/inverters/${editingId}/`, payload);
+    alert('Inverter updated successfully');
+    setEditingId(null);
+    fetchInverters(currentPage);
+  } catch (error) {
+    console.error('Update failed', error.response?.data || error);
+    alert(JSON.stringify(error.response?.data));
       let msg = 'Update failed. Please check your inputs.';
       if (error.response?.status === 400) {
         if (error.response?.data?.serial_no) {
@@ -225,7 +225,9 @@ const normalizeText = (val) => {
     <div className="max-w-7xl mx-auto px-4 mt-8">
       <MDBCard className="shadow-sm mb-4">
         <MDBCardBody>
-          <MDBCardTitle className="text-primary fw-bold fs-4 mb-3">
+          <MDBCardTitle className="text-primary fw-bold fs-4 mb-3"
+           style={{ marginTop: '40px' }}
+          >
             🛠️ Inverter List
           </MDBCardTitle>
 

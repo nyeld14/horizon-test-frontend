@@ -184,8 +184,11 @@ const handleSort = (key) => {
 
 
   return (
-    <div className="container my-4">
-      <h2 className="h4 mb-4">🔧 Add or Update Service Record</h2>
+       <div className="max-w-7xl mx-auto mt-10 px-4"
+     style={{ marginTop: "60px" }} >
+      <h2 className="h4 mb-4"
+       style={{ marginTop: '40px' }}
+      >🔧 Add or Update Service Record</h2>
 
       <form onSubmit={handleSubmit} className="card p-4 mb-4">
         <table className="table table-borderless">

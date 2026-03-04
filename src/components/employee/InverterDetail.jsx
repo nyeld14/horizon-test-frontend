@@ -68,7 +68,7 @@ const InverterDetail = () => {
           Unit Information – {inverter?.given_name} ({inverter?.unit_id})
         </h3>
         <Link
-          to="/employee-dashboard"
+          to="/employee-dashboard?tab=inverter-list"
           className="btn btn-outline-secondary btn-sm"
         >
           ⬅ Back to Dashboard

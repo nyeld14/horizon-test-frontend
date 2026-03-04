@@ -1,13 +1,11 @@
-
 import React, { useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
 
-const AddLocationForm = () => {
+const AddDistroLocationForm = () => {
   const [locationName, setLocationName] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
   const [validationError, setValidationError] = useState("");
-
 
   const locationRegex = /^[A-Za-z0-9 ]+$/;
 
@@ -17,35 +15,23 @@ const AddLocationForm = () => {
     setError("");
     setValidationError("");
 
-  
     if (!locationRegex.test(locationName.trim())) {
       setValidationError(
-        "Example: 'New York 123' (alphanumeric and spaces only)"
+        "Example: 'Dublin Yard 1' (alphanumeric and spaces only)"
       );
       return;
     }
 
     try {
-      const token = localStorage.getItem("access_token");
+      await axiosInstance.post("/distro/locations/", {
+        location_name: locationName.trim(),
+      });
 
-      await axiosInstance.post(
-        "locations/",
-        {
-          location_name: locationName.trim(),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setSuccessMessage("✅ Location added successfully!");
+      setSuccessMessage("✅ Distro location added successfully!");
       setLocationName("");
     } catch (err) {
       console.error(err.response?.data || err.message);
 
-    
       if (err.response?.data?.location_name) {
         setValidationError(err.response.data.location_name[0]);
       } else {
@@ -58,13 +44,13 @@ const AddLocationForm = () => {
     <form
       onSubmit={handleAddLocation}
       className="text-start mx-auto"
-      style={{ maxWidth: "400px",marginTop: "40px"  }}
+      style={{ maxWidth: "400px", marginTop: "40px" }}
     >
       {successMessage && <p className="text-success">{successMessage}</p>}
       {error && <p className="text-danger">{error}</p>}
 
       <div className="mb-3">
-        <label className="form-label fw-semibold">Location Name</label>
+        <label className="form-label fw-semibold">Distro Location Name</label>
         <input
           type="text"
           className={`form-control ${validationError ? "is-invalid" : ""}`}
@@ -78,10 +64,10 @@ const AddLocationForm = () => {
       </div>
 
       <button type="submit" className="btn btn-primary">
-        Add Location
+        Add Distro Location
       </button>
     </form>
   );
 };
 
-export default AddLocationForm;
+export default AddDistroLocationForm;

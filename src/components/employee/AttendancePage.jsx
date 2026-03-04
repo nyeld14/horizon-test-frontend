@@ -138,7 +138,8 @@ const AttendancePage = () => {
   };
 
   return (
-    <div className="mt-3">
+     <div className="max-w-7xl mx-auto mt-10 px-4"
+     style={{ marginTop: "80px" }} >
 {toast.show && (
   <div
     style={{
@@ -177,7 +178,7 @@ const AttendancePage = () => {
 
 
       {/* Attendance Date */}
-      <div className="mb-2">
+      <div className="mb-2"  >
         <label className="form-label">Attendance Date</label>
         <input
           type="date"

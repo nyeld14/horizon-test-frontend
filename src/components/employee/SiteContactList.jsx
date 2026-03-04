@@ -173,7 +173,8 @@ const sortedContacts = [...contacts].sort((a, b) => {
   const totalPages = Math.ceil(count / 10);
 
   return (
-    <div className="p-4">
+       <div className="max-w-7xl mx-auto mt-10 px-4"
+     style={{ marginTop: "60px" }} >
       <MDBCard className="mb-4 shadow-sm">
         <MDBCardBody>
          

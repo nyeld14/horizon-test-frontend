@@ -152,8 +152,15 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
   if (mode !== 'admin' && data.length === 0) return <p>No inverter data available.</p>;
 
   return (
-    <div style={{ width: '100%', textAlign: 'center', paddingBottom: '2rem' }}>
-      
+  <div
+    style={{
+      width: '100%',
+      textAlign: 'center',
+      paddingBottom: '2rem',
+      paddingTop: '30px'  
+    }}
+  >
+
       {mode !== 'admin' && (
         <div className="d-flex justify-content-center align-items-start gap-4 flex-wrap">
           <div style={{ width: '400px', height: 400 }}>
@@ -180,7 +187,7 @@ const InverterStatusChart = ({ mode = 'employee' }) => {
           </div>
 
          
-          <div>
+        <div style={{ marginTop: '25px' }}>
             <table
               style={{
                 borderCollapse: 'collapse',
