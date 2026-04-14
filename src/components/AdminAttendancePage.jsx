@@ -17,7 +17,9 @@ const AdminAttendancePage = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   });
 
-  /* ================= FETCH ================= */
+  const [holidays, setHolidays] = useState([]);
+
+  /* ================= FETCH ATTENDANCE ================= */
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -35,6 +37,32 @@ const AdminAttendancePage = () => {
 
     fetchAttendance();
   }, []);
+
+  /* ================= FETCH IRELAND HOLIDAYS ================= */
+
+  useEffect(() => {
+    const fetchHolidays = async () => {
+      try {
+        const [year, monthNum] = month.split('-');
+        const res = await axiosInstance.get(
+          `/employee/attendance/ireland-holidays/?year=${year}&month=${Number(monthNum)}`
+        );
+        setHolidays(Array.isArray(res.data) ? res.data : []);
+      } catch {
+        setHolidays([]);
+      }
+    };
+
+    fetchHolidays();
+  }, [month]);
+
+  const holidayMap = useMemo(() => {
+    const map = {};
+    holidays.forEach((h) => {
+      map[h.date] = h.name;
+    });
+    return map;
+  }, [holidays]);
 
   /* ================= GROUP BY EMPLOYEE ================= */
 
@@ -79,7 +107,9 @@ const AdminAttendancePage = () => {
     for (let day = 1; day <= lastDate; day++) {
       const dateStr = `${month}-${String(day).padStart(2, '0')}`;
       const record = employeeRecords.find((r) => r.date === dateStr);
-      week.push({ day, record });
+      const holidayName = holidayMap[dateStr] || null;
+
+      week.push({ day, record, dateStr, holidayName });
 
       if (week.length === 7) {
         calendar.push(week);
@@ -101,7 +131,6 @@ const AdminAttendancePage = () => {
     <div className="mt-3">
       <h5 className="mb-3">Attendance Calendar</h5>
 
-      {/* ================= EMPLOYEE LIST ================= */}
       {!selectedEmployee && (
         <div className="list-group mb-4">
           {employees.map((emp) => (
@@ -116,10 +145,8 @@ const AdminAttendancePage = () => {
         </div>
       )}
 
-      {/* ================= EMPLOYEE CALENDAR ================= */}
       {selectedEmployee && (
         <>
-          {/* Header */}
           <div className="d-flex align-items-center justify-content-between mb-3">
             <button
               className="btn btn-outline-secondary btn-sm"
@@ -149,7 +176,6 @@ const AdminAttendancePage = () => {
 
           <h6 className="mb-2">{selectedEmployee.name}</h6>
 
-          {/* Calendar */}
           <div className="table-responsive">
             <table className="table table-bordered text-center">
               <thead className="table-dark">
@@ -168,21 +194,44 @@ const AdminAttendancePage = () => {
                 {buildCalendar(selectedEmployee.records).map((week, i) => (
                   <tr key={i}>
                     {week.map((cell, idx) => {
-                      if (!cell)
+                      if (!cell) {
                         return <td key={idx} className="bg-light"></td>;
+                      }
 
                       const isWeekend = idx === 0 || idx === 6;
+                      const isHoliday = !!cell.holidayName;
                       const status = cell.record?.status;
 
                       let className = 'p-3';
-                      if (isWeekend) className += ' bg-danger text-white';
-                      else if (status)
+                      let title = '';
+
+                      // Priority:
+                      // 1. Ireland holiday -> red
+                      // 2. Weekend -> red
+                      // 3. Status color
+                      // 4. No record -> light
+                      if (isHoliday) {
+                        className += ' bg-danger text-white';
+                        title = cell.holidayName;
+                      } else if (isWeekend) {
+                        className += ' bg-danger text-white';
+                        title = 'Weekend';
+                      } else if (status) {
                         className += ` ${STATUS_COLOR[status]}`;
-                      else className += ' bg-light';
+                        title = status;
+                      } else {
+                        className += ' bg-light';
+                        title = 'No Record';
+                      }
 
                       return (
-                        <td key={idx} className={className}>
+                        <td key={idx} className={className} title={title}>
                           <div className="fw-bold">{cell.day}</div>
+                          {cell.holidayName && (
+                            <small style={{ fontSize: '11px' }}>
+                              {cell.holidayName}
+                            </small>
+                          )}
                         </td>
                       );
                     })}
@@ -192,12 +241,11 @@ const AdminAttendancePage = () => {
             </table>
           </div>
 
-          {/* Legend */}
           <div className="d-flex flex-wrap gap-3 mt-3">
             <span className="badge bg-success">Present</span>
             <span className="badge bg-warning text-dark">Absent</span>
             <span className="badge bg-info">WFH</span>
-            <span className="badge bg-danger">Weekend</span>
+            <span className="badge bg-danger">Weekend / Ireland Holiday</span>
             <span className="badge bg-secondary">No Record</span>
           </div>
         </>

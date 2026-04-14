@@ -1,12 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import LoginForm from "./components/LoginForm";
 import RegisterUser from "./components/RegisterUser";
 import AdminDashboard from "./pages/AdminDashboard";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
-
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminPOForm from "./components/AdminPOForm";
 import AdminPOList from "./components/AdminPOList";
@@ -18,12 +16,11 @@ import SubmittedChecklistList from "./components/employee/SubmittedChecklistList
 import InverterUtilizationChart from "./components/employee/InverterTrendChart";
 import InverterDetail from "./components/employee/InverterDetail";
 import UsageReport from "./components/employee/UsageReport";
-
 import AdminAttendancePage from "./components/AdminAttendancePage";
 import AdminLeaveApprovalPage from "./components/AdminLeaveApprovalPage";
-
-/* ✅ NEW IMPORT */
 import DistroDetail from "./components/distro/DistroDetail";
+import CreateTaskPage from "./components/admin/CreateTaskPage";
+import TaskListPage from "./components/admin/TaskListPage";
 
 function App() {
   return (
@@ -72,6 +69,8 @@ function App() {
             <Route path="trend-chart" element={<InverterUtilizationChart />} />
             <Route path="attendance" element={<AdminAttendancePage />} />
             <Route path="leave-approval" element={<AdminLeaveApprovalPage />} />
+            <Route path="create-task" element={<CreateTaskPage />} />
+            <Route path="task-list" element={<TaskListPage />} />
           </Route>
 
           {/* EMPLOYEE DASHBOARD */}
@@ -103,6 +102,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
         </Routes>
       </>
     </Router>

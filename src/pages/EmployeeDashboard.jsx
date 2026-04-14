@@ -38,6 +38,9 @@ import DistroTrendLineChart from "../components/distro/DistroTrendLineChart";
 import DistroList from "../components/distro/DistroList";
 import DistroOrderList from "../components/distro/DistroOrderList";
 
+/* ===== TASK ===== */
+import EmployeeTaskPage from "../components/employee/EmployeeTaskPage";
+
 const NAVBAR_HEIGHT = 64;
 
 const EmployeeDashboard = () => {
@@ -51,18 +54,24 @@ const EmployeeDashboard = () => {
   const token = localStorage.getItem("access_token");
   const userName = localStorage.getItem("user_name") || "User";
 
+  const getMenuForTab = (tabKey) => {
+    if (["attendance", "leave-application"].includes(tabKey)) {
+      return "attendance";
+    }
+    if (tabKey.startsWith("distro")) {
+      return "distro";
+    }
+    if (tabKey.startsWith("task")) {
+      return "tasklist";
+    }
+    return "battery";
+  };
+
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab) {
       setActiveTab(tab);
-
-      if (["attendance", "leave-application"].includes(tab)) {
-        setOpenMenu("attendance");
-      } else if (tab.startsWith("distro")) {
-        setOpenMenu("distro");
-      } else {
-        setOpenMenu("battery");
-      }
+      setOpenMenu(getMenuForTab(tab));
     }
   }, [searchParams]);
 
@@ -71,14 +80,7 @@ const EmployeeDashboard = () => {
     const params = new URLSearchParams(searchParams);
     params.set("tab", tabKey);
     setSearchParams(params);
-
-    if (["attendance", "leave-application"].includes(tabKey)) {
-      setOpenMenu("attendance");
-    } else if (tabKey.startsWith("distro")) {
-      setOpenMenu("distro");
-    } else {
-      setOpenMenu("battery");
-    }
+    setOpenMenu(getMenuForTab(tabKey));
   };
 
   const handleLogout = () => {
@@ -239,6 +241,30 @@ const EmployeeDashboard = () => {
                 ))}
               </div>
             )}
+
+            {/* TASK LIST */}
+            <button
+              className={menuButtonClass("tasklist")}
+              onClick={() =>
+                openMenu === "tasklist"
+                  ? setOpenMenu(null)
+                  : (setOpenMenu("tasklist"), changeTab("task-view"))
+              }
+            >
+              📋 Task List
+            </button>
+
+            {openMenu === "tasklist" && (
+              <div className="ms-2">
+                <button
+                  className={subMenuButtonClass("task-view")}
+                  onClick={() => changeTab("task-view")}
+                >
+                  👁 View Task
+                </button>
+              </div>
+            )}
+
           </div>
 
           <div className="p-3 mt-auto">
@@ -281,6 +307,8 @@ const EmployeeDashboard = () => {
         {activeTab === "distro-order-add" && <DistroOrderForm token={token} />}
         {activeTab === "distro-sims" && <DistroSimDetailList token={token} />}
         {activeTab === "distro-services" && <DistroServiceRecordsForm token={token} />}
+
+        {activeTab === "task-view" && <EmployeeTaskPage />}
       </div>
     </div>
   );
