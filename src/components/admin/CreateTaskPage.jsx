@@ -17,7 +17,6 @@ import {
 } from "mdb-react-ui-kit";
 
 const CreateTaskPage = () => {
-
   const [formData, setFormData] = useState({
     inverter: "",
     location: "",
@@ -36,13 +35,9 @@ const CreateTaskPage = () => {
   // =============================
   // FETCH DATA
   // =============================
-
   useEffect(() => {
-
     const fetchData = async () => {
-
       try {
-
         const [invRes, locRes, userRes] = await Promise.all([
           axiosInstance.get("/inverters/"),
           axiosInstance.get("/locations/"),
@@ -52,69 +47,54 @@ const CreateTaskPage = () => {
         setInverters(invRes.data.results || invRes.data);
         setLocations(locRes.data.results || locRes.data);
         setUsers(userRes.data.results || userRes.data);
-
       } catch (error) {
-
         console.error("Error loading task form data:", error);
-
       } finally {
-
         setLoading(false);
-
       }
-
     };
 
     fetchData();
-
   }, []);
 
   // =============================
   // HANDLE INPUT
   // =============================
-
   const handleChange = (e) => {
+    const { name, value } = e.target;
 
-    const { name, value, options } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
 
-    if (name === "assigned_to") {
+  // =============================
+  // HANDLE CHECKBOX CHANGE
+  // =============================
+  const handleUserCheckbox = (e) => {
+    const value = e.target.value;
 
-      const selectedUsers = [];
-
-      for (let i = 0; i < options.length; i++) {
-
-        if (options[i].selected) {
-          selectedUsers.push(options[i].value);
-        }
-
-      }
-
+    if (e.target.checked) {
       setFormData({
         ...formData,
-        assigned_to: selectedUsers,
+        assigned_to: [...formData.assigned_to, value],
       });
-
     } else {
-
       setFormData({
         ...formData,
-        [name]: value,
+        assigned_to: formData.assigned_to.filter((id) => id !== value),
       });
-
     }
-
   };
 
   // =============================
   // CREATE TASK
   // =============================
-
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     try {
-
       await axiosInstance.post("/tasklist/tasks/", formData);
 
       setSuccessModal(true);
@@ -126,15 +106,10 @@ const CreateTaskPage = () => {
         description: "",
         remarks: "",
       });
-
     } catch (error) {
-
       console.error("Task creation error:", error.response?.data);
-
       alert("Error creating task");
-
     }
-
   };
 
   if (loading) {
@@ -144,84 +119,73 @@ const CreateTaskPage = () => {
   return (
     <>
       <MDBCard className="mt-4">
-
-        {/* UPDATED BOLD HEADING */}
         <MDBCardHeader className="fw-bold fs-4 text-center">
           Create Task
         </MDBCardHeader>
 
         <MDBCardBody>
-
           <form onSubmit={handleSubmit}>
-
             {/* INVERTER */}
-
             <label>Inverter</label>
-
             <select
               name="inverter"
               className="form-control mb-3"
               value={formData.inverter}
               onChange={handleChange}
             >
-
               <option value="">Select Inverter</option>
-
               {inverters.map((inv) => (
                 <option key={inv.id} value={inv.id}>
                   {inv.given_start_name}
                 </option>
               ))}
-
             </select>
 
-
             {/* LOCATION */}
-
             <label>Location</label>
-
             <select
               name="location"
               className="form-control mb-3"
               value={formData.location}
               onChange={handleChange}
             >
-
               <option value="">Select Location</option>
-
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
                   {loc.location_name}
                 </option>
               ))}
-
             </select>
 
-
-            {/* ASSIGN EMPLOYEE */}
-
-            <label>Assign To (Hold CTRL to select multiple)</label>
-
-            <select
-              key={formData.assigned_to.join(",")}
-              name="assigned_to"
-              className="form-control mb-3"
-              multiple
-              value={formData.assigned_to}
-              onChange={handleChange}
+            {/* ASSIGN USERS - CHECKBOX */}
+            <label>Assign To</label>
+            <div
+              className="mb-3 border p-2"
+              style={{ maxHeight: "200px", overflowY: "auto" }}
             >
-
               {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
+                <div key={user.id} className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    value={user.id}
+                    id={`user-${user.id}`}
+                    checked={formData.assigned_to.includes(
+                      String(user.id)
+                    )}
+                    onChange={handleUserCheckbox}
+                  />
+                  <label
+                    className="form-check-label"
+                    htmlFor={`user-${user.id}`}
+                  >
+                    {user.name}
+                  </label>
+                </div>
               ))}
-
-            </select>
-
+            </div>
 
             {/* DESCRIPTION */}
-
             <MDBTextArea
               label="Task Description"
               name="description"
@@ -231,9 +195,7 @@ const CreateTaskPage = () => {
               className="mb-3"
             />
 
-
             {/* REMARKS */}
-
             <MDBTextArea
               label="Remarks"
               name="remarks"
@@ -243,24 +205,15 @@ const CreateTaskPage = () => {
               className="mb-3"
             />
 
-
             <MDBBtn type="submit">Create Task</MDBBtn>
-
           </form>
-
         </MDBCardBody>
-
       </MDBCard>
 
-
-      {/* SUCCESS POPUP */}
-
+      {/* SUCCESS MODAL */}
       <MDBModal open={successModal} setOpen={setSuccessModal} tabIndex="-1">
-
         <MDBModalDialog centered>
-
           <MDBModalContent>
-
             <MDBModalHeader>
               <MDBModalTitle>Success</MDBModalTitle>
             </MDBModalHeader>
@@ -270,22 +223,15 @@ const CreateTaskPage = () => {
             </MDBModalBody>
 
             <MDBModalFooter>
-
               <MDBBtn color="success" onClick={() => setSuccessModal(false)}>
                 OK
               </MDBBtn>
-
             </MDBModalFooter>
-
           </MDBModalContent>
-
         </MDBModalDialog>
-
       </MDBModal>
-
     </>
   );
-
 };
 
 export default CreateTaskPage;

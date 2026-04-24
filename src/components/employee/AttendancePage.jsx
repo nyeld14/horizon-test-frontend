@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axiosInstance from '../../api/axiosInstance';
 import {
   MDBBtn,
@@ -21,11 +21,23 @@ const AttendancePage = () => {
   const [pastCheckOut, setPastCheckOut] = useState('');
   const [pastRdMinutes, setPastRdMinutes] = useState('');
 
-  // RD edit
-  const [editRdId, setEditRdId] = useState(null);
+  // Edit attendance
+  const [editRecordId, setEditRecordId] = useState(null);
+  const [editCheckIn, setEditCheckIn] = useState('');
+  const [editCheckOut, setEditCheckOut] = useState('');
   const [editRdMinutes, setEditRdMinutes] = useState('');
 
-  // 🔔 Toast
+  // Original values for comparison
+  const [originalCheckIn, setOriginalCheckIn] = useState('');
+  const [originalCheckOut, setOriginalCheckOut] = useState('');
+  const [originalRdMinutes, setOriginalRdMinutes] = useState('');
+
+  // Month navigation
+  const todayDate = new Date();
+  const [viewYear, setViewYear] = useState(todayDate.getFullYear());
+  const [viewMonth, setViewMonth] = useState(todayDate.getMonth());
+
+  // Toast
   const [toast, setToast] = useState({
     show: false,
     message: '',
@@ -41,15 +53,18 @@ const AttendancePage = () => {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  /* ================= FETCH ================= */
-
   const fetchAttendance = async () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get('/employee/attendance/');
       const data = res.data;
       const list = Array.isArray(data) ? data : data.results || [];
-      setRecords(list);
+
+      const sortedList = [...list].sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+
+      setRecords(sortedList);
     } catch {
       setRecords([]);
       showToast('Failed to load attendance', 'danger');
@@ -68,8 +83,6 @@ const AttendancePage = () => {
     todayRecord &&
     ['PRESENT', 'WFH'].includes(todayRecord.status) &&
     !todayRecord.check_out_time;
-
-  /* ================= MARK ATTENDANCE ================= */
 
   const markDateAttendance = async (status) => {
     if (!selectedDate) {
@@ -101,11 +114,12 @@ const AttendancePage = () => {
       setPastRdMinutes('');
       fetchAttendance();
     } catch (err) {
-      showToast(err.response?.data?.detail || 'Failed to mark attendance', 'danger');
+      showToast(
+        err.response?.data?.detail || 'Failed to mark attendance',
+        'danger'
+      );
     }
   };
-
-  /* ================= SIGN OUT ================= */
 
   const signOutToday = async () => {
     try {
@@ -116,69 +130,163 @@ const AttendancePage = () => {
       setRdMinutes('');
       fetchAttendance();
     } catch (err) {
-      showToast(err.response?.data?.detail || 'Could not sign out', 'danger');
+      showToast(
+        err.response?.data?.detail || 'Could not sign out',
+        'danger'
+      );
     }
   };
 
-  /* ================= EDIT RD ================= */
+  const startEdit = (rec) => {
+    const checkIn = rec.check_in_time || '';
+    const checkOut = rec.check_out_time || '';
+    const rd = String(rec.rd_time_minutes ?? 0);
 
-  const saveEditedRd = async (id) => {
+    setEditRecordId(rec.id);
+    setEditCheckIn(checkIn);
+    setEditCheckOut(checkOut);
+    setEditRdMinutes(rd);
+
+    setOriginalCheckIn(checkIn);
+    setOriginalCheckOut(checkOut);
+    setOriginalRdMinutes(rd);
+  };
+
+  const cancelEdit = () => {
+    setEditRecordId(null);
+    setEditCheckIn('');
+    setEditCheckOut('');
+    setEditRdMinutes('');
+    setOriginalCheckIn('');
+    setOriginalCheckOut('');
+    setOriginalRdMinutes('');
+  };
+
+  const hasChanges = (rec) => {
+    if (editRecordId !== rec.id) return false;
+
+    return (
+      editCheckIn !== originalCheckIn ||
+      editCheckOut !== originalCheckOut ||
+      editRdMinutes !== originalRdMinutes
+    );
+  };
+
+  const saveEditedAttendance = async (rec) => {
     try {
+      const payload = {};
+
+      if (editCheckIn !== originalCheckIn) {
+        payload.check_in_time = editCheckIn || null;
+      }
+
+      if (editCheckOut !== originalCheckOut) {
+        payload.check_out_time = editCheckOut || null;
+      }
+
+      if (editRdMinutes !== originalRdMinutes) {
+        payload.rd_minutes =
+          editRdMinutes === '' ? 0 : parseInt(editRdMinutes, 10);
+      }
+
+      if (Object.keys(payload).length === 0) {
+        showToast('No changes made', 'warning');
+        return;
+      }
+
       await axiosInstance.patch(
-        `/employee/attendance/${id}/update-rd-time/`,
-        { rd_minutes: editRdMinutes }
+        `/employee/attendance/${rec.id}/update-attendance/`,
+        payload
       );
-      showToast('RD time updated', 'success');
-      setEditRdId(null);
-      setEditRdMinutes('');
+
+      showToast('Attendance updated', 'success');
+      cancelEdit();
       fetchAttendance();
     } catch (err) {
-      showToast(err.response?.data?.detail || 'Failed to update RD time', 'danger');
+      showToast(
+        err.response?.data?.detail || 'Failed to update attendance',
+        'danger'
+      );
+    }
+  };
+
+  const currentMonthRecords = useMemo(() => {
+    return records.filter((rec) => {
+      const d = new Date(rec.date);
+      return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+    });
+  }, [records, viewYear, viewMonth]);
+
+  const monthLabel = new Date(viewYear, viewMonth).toLocaleString('default', {
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const isCurrentMonth =
+    viewYear === todayDate.getFullYear() &&
+    viewMonth === todayDate.getMonth();
+
+  const goToPreviousMonth = () => {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((prev) => prev - 1);
+    } else {
+      setViewMonth((prev) => prev - 1);
+    }
+  };
+
+  const goToNextMonth = () => {
+    if (isCurrentMonth) return;
+
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((prev) => prev + 1);
+    } else {
+      setViewMonth((prev) => prev + 1);
     }
   };
 
   return (
-     <div className="max-w-7xl mx-auto mt-10 px-4"
-     style={{ marginTop: "80px" }} >
-{toast.show && (
-  <div
-    style={{
-      position: 'fixed',
-      top: '70px',            // ⬅ below navbar
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 999999,         // ⬅ higher than sidebar/header
-      background: '#fff',
-      borderRadius: '6px',
-      minWidth: '360px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-      padding: '12px 18px',
-      textAlign: 'center',
-      pointerEvents: 'auto',
-    }}
-  >
-    <span
-      style={{
-        color:
-          toast.color === 'success'
-            ? '#198754'
-            : toast.color === 'danger'
-            ? '#dc3545'
-            : toast.color === 'warning'
-            ? '#ffc107'
-            : '#0dcaf0',
-        fontWeight: 600,
-      }}
+    <div
+      className="max-w-7xl mx-auto mt-10 px-4"
+      style={{ marginTop: '80px' }}
     >
-      {toast.message}
-    </span>
-  </div>
-)}
+      {toast.show && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '70px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999999,
+            background: '#fff',
+            borderRadius: '6px',
+            minWidth: '360px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+            padding: '12px 18px',
+            textAlign: 'center',
+            pointerEvents: 'auto',
+          }}
+        >
+          <span
+            style={{
+              color:
+                toast.color === 'success'
+                  ? '#198754'
+                  : toast.color === 'danger'
+                  ? '#dc3545'
+                  : toast.color === 'warning'
+                  ? '#ffc107'
+                  : '#0dcaf0',
+              fontWeight: 600,
+            }}
+          >
+            {toast.message}
+          </span>
+        </div>
+      )}
 
-
-
-      {/* Attendance Date */}
-      <div className="mb-2"  >
+      <div className="mb-2">
         <label className="form-label">Attendance Date</label>
         <input
           type="date"
@@ -189,7 +297,6 @@ const AttendancePage = () => {
         />
       </div>
 
-      {/* Past date inputs */}
       {selectedDate && selectedDate < today && (
         <>
           <div className="mb-2">
@@ -225,7 +332,6 @@ const AttendancePage = () => {
         </>
       )}
 
-      {/* Remarks */}
       <div className="mb-2">
         <label className="form-label">Remarks</label>
         <input
@@ -237,7 +343,6 @@ const AttendancePage = () => {
         />
       </div>
 
-      {/* RD before sign out */}
       {canSignOut && (
         <div className="mb-2">
           <label className="form-label">RD Time (minutes)</label>
@@ -251,7 +356,6 @@ const AttendancePage = () => {
         </div>
       )}
 
-      {/* Buttons */}
       <div className="mb-3 d-flex gap-2 flex-wrap">
         <MDBBtn size="sm" color="success" onClick={() => markDateAttendance('PRESENT')}>
           Mark Present
@@ -269,11 +373,30 @@ const AttendancePage = () => {
         )}
       </div>
 
-      {/* Table */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <MDBBtn size="sm" color="light" onClick={goToPreviousMonth}>
+          <MDBIcon icon="chevron-left" />
+        </MDBBtn>
+
+        <h4 className="mb-0 fw-bold text-primary">{monthLabel}</h4>
+
+        <MDBBtn
+          size="sm"
+          color="light"
+          onClick={goToNextMonth}
+          disabled={isCurrentMonth}
+        >
+          <MDBIcon
+            icon="chevron-right"
+            className={isCurrentMonth ? 'text-muted' : ''}
+          />
+        </MDBBtn>
+      </div>
+
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <MDBTable small hover responsive>
+        <MDBTable small hover responsive bordered>
           <MDBTableHead light>
             <tr>
               <th>#</th>
@@ -287,70 +410,87 @@ const AttendancePage = () => {
             </tr>
           </MDBTableHead>
           <MDBTableBody>
-            {records.length ? (
-              records.map((rec, idx) => (
+            {currentMonthRecords.length ? (
+              currentMonthRecords.map((rec, idx) => (
                 <tr key={rec.id || idx}>
                   <td>{idx + 1}</td>
                   <td>{rec.date}</td>
                   <td>{rec.status}</td>
-                  <td>{rec.check_in_display || '-'}</td>
-                  <td>{rec.check_out_display || '-'}</td>
-                  <td>{rec.total_work_display || '-'}</td>
-                  <td>
-  {editRdId === rec.id ? (
-    <>
-      <input
-        type="number"
-        className="form-control form-control-sm"
-        min="0"
-        placeholder="Minutes"
-        value={editRdMinutes}
-        onChange={(e) => setEditRdMinutes(e.target.value)}
-      />
-      <div className="mt-1 d-flex gap-2">
-        <MDBBtn
-          size="sm"
-          color="success"
-          onClick={() => saveEditedRd(rec.id)}
-        >
-          Save
-        </MDBBtn>
-        <MDBBtn
-          size="sm"
-          color="secondary"
-          onClick={() => {
-            setEditRdId(null);
-            setEditRdMinutes('');
-          }}
-        >
-          Cancel
-        </MDBBtn>
-      </div>
-    </>
-  ) : (
-                          <div className="d-flex align-items-center gap-2">
-                            <span>{rec.rd_time_display || '-'}</span>
 
-                            {/* ✏️ ALWAYS SHOW EDIT ICON (except ABSENT optional) */}
-                            {rec.status !== 'ABSENT' && (
-                              <MDBIcon
-                                icon="pen"
-                                className="text-primary"
-                                role="button"
-                                title="Add / Edit RD Time"
-                                onClick={() => {
-                                  setEditRdId(rec.id);
-                                  setEditRdMinutes(
-                                    rec.rd_time_display
-                                      ? parseInt(rec.rd_time_display) || ''
-                                      : ''
-                                  );
-                                }}
-                              />
-                            )}
-                          </div>
+                  <td>
+                    {editRecordId === rec.id ? (
+                      <input
+                        type="time"
+                        className="form-control form-control-sm"
+                        value={editCheckIn}
+                        onChange={(e) => setEditCheckIn(e.target.value)}
+                        disabled={rec.status === 'ABSENT'}
+                      />
+                    ) : (
+                      rec.check_in_display || '-'
+                    )}
+                  </td>
+
+                  <td>
+                    {editRecordId === rec.id ? (
+                      <input
+                        type="time"
+                        className="form-control form-control-sm"
+                        value={editCheckOut}
+                        onChange={(e) => setEditCheckOut(e.target.value)}
+                        disabled={rec.status === 'ABSENT'}
+                      />
+                    ) : (
+                      rec.check_out_display || '-'
+                    )}
+                  </td>
+
+                  <td>{rec.total_work_display || '-'}</td>
+
+                  <td>
+                    {editRecordId === rec.id ? (
+                      <>
+                        <input
+                          type="number"
+                          className="form-control form-control-sm"
+                          min="0"
+                          placeholder="Minutes"
+                          value={editRdMinutes}
+                          onChange={(e) => setEditRdMinutes(e.target.value)}
+                        />
+                        <div className="mt-1 d-flex gap-2">
+                          <MDBBtn
+                            size="sm"
+                            color="success"
+                            onClick={() => saveEditedAttendance(rec)}
+                            disabled={!hasChanges(rec)}
+                          >
+                            Save
+                          </MDBBtn>
+                          <MDBBtn
+                            size="sm"
+                            color="secondary"
+                            onClick={cancelEdit}
+                          >
+                            Cancel
+                          </MDBBtn>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="d-flex align-items-center gap-2">
+                        <span>{rec.rd_time_display || '-'}</span>
+                        {rec.status !== 'ABSENT' && (
+                          <MDBIcon
+                            icon="pen"
+                            className="text-primary"
+                            role="button"
+                            title="Edit attendance"
+                            onClick={() => startEdit(rec)}
+                          />
                         )}
-                      </td>
+                      </div>
+                    )}
+                  </td>
 
                   <td>{rec.remarks || '-'}</td>
                 </tr>
@@ -358,7 +498,7 @@ const AttendancePage = () => {
             ) : (
               <tr>
                 <td colSpan="8" className="text-center text-muted">
-                  No attendance records found.
+                  No attendance records found for {monthLabel}.
                 </td>
               </tr>
             )}
