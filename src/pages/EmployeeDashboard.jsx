@@ -8,7 +8,8 @@ import {
   MDBContainer,
   MDBBtn,
 } from "mdb-react-ui-kit";
-
+/* ===== VRM DATA =====*/
+import VRMFleetDashboard from "../components/vrm/VRMFleetDashboard";
 /* ===== BATTERY ===== */
 import OrderListPage from "../components/employee/OrderListPage";
 import AddLocationForm from "../components/employee/AddLocationForm";
@@ -55,17 +56,20 @@ const EmployeeDashboard = () => {
   const userName = localStorage.getItem("user_name") || "User";
 
   const getMenuForTab = (tabKey) => {
-    if (["attendance", "leave-application"].includes(tabKey)) {
-      return "attendance";
-    }
-    if (tabKey.startsWith("distro")) {
-      return "distro";
-    }
-    if (tabKey.startsWith("task")) {
-      return "tasklist";
-    }
-    return "battery";
-  };
+  if (["attendance", "leave-application"].includes(tabKey)) {
+    return "attendance";
+  }
+  if (tabKey.startsWith("distro")) {
+    return "distro";
+  }
+  if (tabKey.startsWith("task")) {
+    return "tasklist";
+  }
+  if (tabKey.startsWith("vrm")) {
+    return "vrm";
+  }
+  return "battery";
+};
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -164,6 +168,31 @@ const EmployeeDashboard = () => {
                 </button>
               </div>
             )}
+
+            {/* VRM FLEET */}
+<button
+  className={menuButtonClass("vrm")}
+  onClick={() =>
+    openMenu === "vrm"
+      ? setOpenMenu(null)
+      : (setOpenMenu("vrm"), changeTab("vrm-fleet"))
+  }
+>
+  ⚡ VRM Fleet
+</button>
+
+{openMenu === "vrm" && (
+  <div className="ms-2">
+    <button
+      className={subMenuButtonClass("vrm-fleet")}
+      onClick={() => changeTab("vrm-fleet")}
+    >
+      Fleet Status
+    </button>
+  </div>
+)}
+
+            
 
             {/* BATTERY */}
             <button
@@ -309,6 +338,7 @@ const EmployeeDashboard = () => {
         {activeTab === "distro-services" && <DistroServiceRecordsForm token={token} />}
 
         {activeTab === "task-view" && <EmployeeTaskPage />}
+        {activeTab === "vrm-fleet" && <VRMFleetDashboard token={token} />}
       </div>
     </div>
   );
