@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const API_BASE = (import.meta.env.VITE_BASE_URL || "https://www.horizonoffgridenergy.com").replace(/\/$/, "");
+const API_BASE = "https://vrm-api-production.up.railway.app";
 
 const STATUS_COLOUR = {
   ok: "#22c55e",
@@ -85,7 +85,7 @@ const SiteDot = ({ site, isSelected, onClick }) => {
   );
 };
 
-const SiteDetail = ({ site, token, onClose }) => {
+const SiteDetail = ({ site, onClose }) => {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hours, setHours] = useState(24);
@@ -94,8 +94,7 @@ const SiteDetail = ({ site, token, onClose }) => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${API_BASE}/api/vrm/fleet-status/${site.installation_id}/?hours=${hours}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${API_BASE}/api/vrm/fleet-status/${site.installation_id}/?hours=${hours}`
       );
       setDetail(res.data);
     } catch (e) {
@@ -103,7 +102,7 @@ const SiteDetail = ({ site, token, onClose }) => {
     } finally {
       setLoading(false);
     }
-  }, [site.installation_id, hours, token]);
+  }, [site.installation_id, hours]);
 
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
 
@@ -137,18 +136,10 @@ const SiteDetail = ({ site, token, onClose }) => {
           </span>
         </div>
         <div className="d-flex gap-2">
-          
-            <a
-            href={site.vrm_url}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-sm btn-outline-primary"
-          >
+          <a href={site.vrm_url} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-primary">
             Open in VRM ↗
           </a>
-          <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>
-            ✕ Close
-          </button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>✕ Close</button>
         </div>
       </div>
 
@@ -281,9 +272,7 @@ const VRMFleetDashboard = ({ token }) => {
 
   const fetchFleet = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/vrm/fleet-status/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(`${API_BASE}/api/vrm/fleet-status/`);
       setFleet(res.data);
       setLastUpdated(new Date());
       setError(null);
@@ -292,7 +281,7 @@ const VRMFleetDashboard = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     fetchFleet();
@@ -384,7 +373,6 @@ const VRMFleetDashboard = ({ token }) => {
       {selectedSite && (
         <SiteDetail
           site={selectedSite}
-          token={token}
           onClose={() => setSelectedSite(null)}
         />
       )}
